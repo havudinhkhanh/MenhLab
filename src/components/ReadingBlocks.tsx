@@ -17,35 +17,61 @@ function List({ items, mark }: { items: string[]; mark: string }) {
   );
 }
 
-export function PalaceBody({ r }: { r: PalaceReading }) {
+/** Phần thân của một cung: văn xuôi diễn giải → biểu hiện đời thường → yếu tố đi kèm → kết luận → nên làm → vì sao. */
+export function PalaceBody({ r, compact }: { r: PalaceReading; compact?: boolean }) {
+  const st = r.story;
   return (
-    <div className="plain">
-      <p className="plain-summary">{r.summary}</p>
-      {r.strengths.length > 0 && (
+    <div className="plain story-body">
+      {st.paras.map((t, i) => (
+        <p key={i} className={i === 0 ? 'story-first' : undefined}>
+          {t}
+        </p>
+      ))}
+      {st.daily.length > 0 && (
+        <div className="daily">
+          <b>Có thể bạn nhận ra mình ở những điều này:</b>
+          <List items={st.daily} mark="·" />
+        </div>
+      )}
+      {st.extras.length > 0 && (
         <>
-          <h4>Thuận lợi</h4>
-          <List items={r.strengths} mark="+" />
+          <h4>Những sao đi kèm nói thêm gì</h4>
+          {!compact && (
+            <p className="small muted" style={{ marginTop: 0 }}>
+              Ngoài sao chính, mỗi cung còn có các sao phụ — như gia vị làm rõ thêm bức tranh. Dấu + là yếu tố hỗ trợ, dấu − là yếu tố cần để ý.
+            </p>
+          )}
+          <ul className="plain-list extras">
+            {st.extras.map((e, i) => (
+              <li key={i} className={e.good ? 'good' : 'bad'}>
+                <span aria-hidden="true" className="mark">
+                  {e.good ? '+' : '−'}
+                </span>
+                {e.text}
+              </li>
+            ))}
+          </ul>
         </>
       )}
-      {r.cautions.length > 0 && (
-        <>
-          <h4>Cần để ý</h4>
-          <List items={r.cautions} mark="!" />
-        </>
-      )}
+      {st.verdict && <p className="verdict">{st.verdict}</p>}
       {r.advice.length > 0 && (
-        <>
-          <h4>Nên làm</h4>
+        <div className="advice-box">
+          <b>Nên làm</b>
           <List items={r.advice} mark="→" />
-        </>
+        </div>
       )}
       <details className="evidence">
-        <summary>Vì sao? Căn cứ trên lá số</summary>
+        <summary>Vì sao lá số nói vậy?</summary>
         <ul>
-          {r.evidence.map((e, i) => (
+          {st.why.map((e, i) => (
             <li key={i}>{e}</li>
           ))}
         </ul>
+        {r.evidence.length > 0 && (
+          <p className="small muted" style={{ margin: '8px 0 0' }}>
+            Ký hiệu kỹ thuật: {r.evidence.join(' · ')}
+          </p>
+        )}
       </details>
     </div>
   );
@@ -163,7 +189,15 @@ export function YearBody({ y }: { y: YearReading }) {
         ))}
       </div>
 
-      <h4>Tiền bạc</h4>
+      {y.story.length > 0 && (
+        <div className="prose story-body" style={{ marginTop: 12 }}>
+          {y.story.map((t, i) => (
+            <p key={i}>{t}</p>
+          ))}
+        </div>
+      )}
+
+      <h4>Tiền bạc năm nay</h4>
       <div className="money-grid">
         <div>
           <b>Tiền đến từ đâu</b>

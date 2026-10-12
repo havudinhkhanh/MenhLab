@@ -34,7 +34,7 @@ function facts(chart: Chart, reading: Reading, stability?: string) {
       cung: reading.palaces.map((p) => ({
         cung: p.palace,
         than_cu: p.isBody,
-        nhan_dinh: p.paragraphs,
+        nhan_dinh: [p.story.lead, ...p.story.paras, ...p.story.extras.map((e) => e.text), p.story.verdict, ...p.advice.map((x) => `Nên làm: ${x}`)],
         dan_chung: p.evidence,
       })),
       dai_van: reading.daiVan.map((d) => ({ tuoi: d.range, cung: d.palace, hien_tai: d.current, ghi_chu: d.notes })),

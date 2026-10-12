@@ -258,15 +258,15 @@ export default function ChartExplorer({
         </h2>
         {r && (
           <>
-            <p className="headline" style={{ fontWeight: 600 }}>
-              {r.headline}
+            <p className="eyebrow" style={{ margin: '0 0 4px' }}>
+              {r.story.q}
             </p>
+            <p className="lead">{r.story.lead}</p>
             {r.locked ? (
               <div className="locked">
-                <p>{r.teaser}</p>
+                <p style={{ marginTop: 0 }}>{r.story.about}</p>
                 <p className="small">
-                  Bản Pro mở khóa phần đọc chi tiết cung {p.name}: ý nghĩa từng sao trong lĩnh vực này, tác động của Tứ Hóa, cát tinh
-                  và sát tinh trong tam phương tứ chính, kèm bảng dẫn chứng.
+                  Bản Pro mở phần diễn giải đầy đủ cung {p.name}: sao chính nói gì về bạn, các sao đi kèm, kết luận, việc nên làm và lý do.
                 </p>
                 <a className="btn" href="#mo-khoa">
                   Mở khóa bản Pro
@@ -274,20 +274,7 @@ export default function ChartExplorer({
               </div>
             ) : (
               <>
-                <PalaceBody r={r} />
-                <div className="balance">
-                  <span>
-                    Hỗ trợ {r.support}
-                    <span className="bar good" style={{ width: Math.min(120, r.support * 16) }} />
-                  </span>
-                  <span>
-                    Thử thách {r.challenge}
-                    <span className="bar bad" style={{ width: Math.min(120, r.challenge * 16) }} />
-                  </span>
-                  <button type="button" className="term small" data-term="Tam phương tứ chính">
-                    cách đếm
-                  </button>
-                </div>
+                <PalaceBody r={r} compact />
                 <p className="small" style={{ marginTop: 12 }}>
                   <b>Tự kiểm chứng:</b> {r.questions.join(' ')}
                 </p>

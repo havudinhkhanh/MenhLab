@@ -20,8 +20,8 @@ export default function Pricing() {
             <li>Lá số đầy đủ 12 cung, hơn 100 sao</li>
             <li>Giải thích mọi thuật ngữ ngay trên lá số</li>
             <li>Tổng quan: Bản Mệnh, Cục, Tứ Hóa năm sinh</li>
-            <li>Đọc chi tiết cung Mệnh, kèm căn cứ</li>
-            <li>Danh sách đại vận, tóm tắt năm nay</li>
+            <li>Diễn giải đầy đủ phần tính cách (cung Mệnh); câu trả lời ngắn cho 11 cung còn lại</li>
+            <li>Các chặng 10 năm, tóm tắt năm nay, chi tiết tháng hiện tại</li>
             <li>Độ nhạy giờ sinh, các bước hiệu chỉnh giờ</li>
             <li>Xem nhanh không cần email, không lưu dữ liệu</li>
           </ul>
@@ -34,9 +34,9 @@ export default function Pricing() {
           <p className="price">{vnd(config.pricePro)}</p>
           <ul>
             <li>Mọi thứ trong Free</li>
-            <li>Đọc chi tiết 11 cung còn lại, mỗi nhận định kèm căn cứ</li>
-            <li>Tứ Hóa của từng đại vận 10 năm</li>
-            <li>Lưu niên đầy đủ năm nay và năm sau</li>
+            <li>Diễn giải đầy đủ 11 cung còn lại bằng lời thường: công việc, tiền bạc, tình cảm, gia đình, sức khỏe — mỗi cung kèm việc nên làm và căn cứ</li>
+            <li>Từng chặng 10 năm: cơ hội đến từ đâu, chuyện gì cần chuẩn bị</li>
+            <li>Năm nay và năm sau: tiền đến từ đâu, dễ hao ở đâu, sức khỏe, tình cảm — và từng tháng nên làm gì</li>
             {ai && <li>Bản luận giải tổng hợp và {config.aiQuestionsLimit} câu hỏi đáp về lá số (AI, có dẫn căn cứ)</li>}
             <li>Bản in, lưu PDF</li>
           </ul>

@@ -40,6 +40,8 @@ import {
   STAR_DOMAIN_EXTRA,
 } from '@/content/plain';
 import { MAJOR, MINOR } from '@/content/stars';
+import { narratePalace, type PalaceStory } from './story';
+import { DOMAIN_DO, STAR_STORY } from '@/content/story';
 
 export interface PalaceReading {
   branch: number;
@@ -59,6 +61,8 @@ export interface PalaceReading {
   challenge: number;
   questions: string[];
   teaser: string;
+  /** Bản diễn giải dạng văn xuôi. */
+  story: PalaceStory;
 }
 
 export interface OverviewItem {
@@ -97,6 +101,8 @@ export interface YearReading {
   evidence: string[];
   /** Bản gộp văn bản (dùng cho email, AI). */
   paragraphs: string[];
+  /** Diễn giải bằng văn xuôi: vì sao năm nay như vậy. */
+  story: string[];
   /** 12 tháng âm lịch (kèm tháng nhuận nếu có): tháng nào nên làm gì. */
   months: MonthReading[];
   /** Tóm tắt nhanh: tháng thuận nhất, tháng nên chậm lại. */
@@ -214,6 +220,7 @@ export function readPalace(chart: Chart, branch: number): PalaceReading {
     evidence.push(`Vô chính diệu tại ${p.branchName} → mượn ${majors.map((s) => s.name).join(', ') || 'không có'} từ ${chart.palaces[tp.opposite].branchName}`);
   }
 
+  let comboForStory: string | undefined;
   const brightTraits: string[] = [];
   // Ý nghĩa chính
   const meanings = majors.map((s) => starInDomain(s.name, domain)).filter(Boolean);
@@ -228,6 +235,7 @@ export function readPalace(chart: Chart, branch: number): PalaceReading {
   if (majors.length === 2) {
     const combo = COMBOS[`${majors[0].name}+${majors[1].name}`] ?? COMBOS[`${majors[1].name}+${majors[0].name}`];
     const comboText = combo ? combo.split(': ').slice(1).join(': ') || combo : '';
+    if (combo && comboText.length > 30 && !borrowed) comboForStory = comboText;
     if (combo && comboText.length > 30) {
       strengths.push(dot(upper(comboText)));
       evidence.push(`Bộ sao ${majors[0].name} – ${majors[1].name}`);
@@ -294,7 +302,8 @@ export function readPalace(chart: Chart, branch: number): PalaceReading {
   else if (['Tuyệt', 'Tử', 'Mộ', 'Bệnh'].includes(p.trangSinh)) evidence.push(`Vòng Tràng Sinh: ${p.trangSinh} (sinh khí trầm)`);
 
   // Lời khuyên
-  if (majors[0] && STAR_ADVICE[majors[0].name]) advice.push(STAR_ADVICE[majors[0].name]);
+  if (['menh', 'quan', 'tai'].includes(domain) && majors[0] && STAR_ADVICE[majors[0].name]) advice.push(STAR_ADVICE[majors[0].name]);
+  if (DOMAIN_DO[domain]) advice.push(DOMAIN_DO[domain]!);
   const net = support - challenge;
   if (net <= -1 && DOMAIN_CAUTION_ADVICE[domain]) advice.push(DOMAIN_CAUTION_ADVICE[domain]!);
   if (domain === 'tai' && p.badStars.some((s) => s.name === 'Địa Không' || s.name === 'Địa Kiếp')) {
@@ -346,6 +355,7 @@ export function readPalace(chart: Chart, branch: number): PalaceReading {
     challenge,
     questions: info.questions,
     teaser,
+    story: narratePalace(chart, branch, { combo: comboForStory, support, challenge }),
   };
 }
 
@@ -546,9 +556,9 @@ export function readYear(chart: Chart, y: number, now?: Date): YearReading {
   const dl = (name: string) => DOMAIN_LABEL[PALACES[name]?.domain ?? 'menh'];
 
   // Tóm tắt
-  const summary = [`Trọng tâm của năm: ${lower(FOCUS[TT])}`];
-  if (TH !== TT) summary.push(`Bản thân bạn sẽ để tâm nhiều tới chuyện ${dl(TH)}.`);
-  summary.push(`Thuận lợi nhất ở chuyện ${dl(L)}; cần cẩn thận ở chuyện ${dl(KY)}.`);
+  const summary = [`Chuyện được nhắc tới nhiều nhất trong năm: ${MONTH_TOPIC[TT]}.`];
+  if (TH !== TT) summary.push(`Tự bạn sẽ thấy bận tâm nhiều về ${MONTH_TOPIC[TH]}.`);
+  summary.push(`Thuận nhất ở chuyện ${MONTH_TOPIC[L] ?? L}; cần làm chắc tay ở chuyện ${MONTH_TOPIC[KY] ?? KY}.`);
 
   // Tiền bạc
   const sources = [`Nguồn chính: ${MONEY_SOURCE[L]}.`];
@@ -633,6 +643,21 @@ export function readYear(chart: Chart, y: number, now?: Date): YearReading {
   ];
 
   const months = readMonths(chart, y, now);
+  const yc = yearCanChi(y);
+  const story: string[] = [
+    `Năm ${l.canChi} (${y}), bạn ${l.age} tuổi âm. Cách Tử Vi xem một năm: lấy những "dấu mốc" của năm đó đặt lên lá số gốc của bạn, xem chúng rơi vào lĩnh vực nào của đời sống. Lá số gốc không đổi; cái thay đổi mỗi năm là chỗ các dấu mốc này rơi vào.`,
+    `Dấu mốc chính của năm — sách gọi là Thái Tuế — rơi vào cung ${TT} của bạn, nên chuyện ${MONTH_TOPIC[TT]} sẽ là chuyện được nhắc tới nhiều nhất trong năm. Việc hợp làm nhất: ${lower(MONTH_DO[TT])}${
+      TH !== TT
+        ? ` Còn "hạn" theo tuổi của riêng bạn (Tiểu hạn) năm nay đi qua cung ${TH}: chuyện ${MONTH_TOPIC[TH]} là điều tự bạn sẽ thấy mình bận tâm nhiều.`
+        : ' Hạn theo tuổi của riêng bạn (Tiểu hạn) cũng nằm đúng cung này, nên chủ đề đó càng rõ.'
+    }`,
+    `Mỗi năm, Can của năm (năm nay là ${CAN[yc.can]}) làm bốn sao trên lá số "đổi màu". Năm nay: ${hoa[0].star} được thêm nguồn lợi (Hóa Lộc) ở cung ${L} — thuận nhất ở chuyện ${MONTH_TOPIC[L] ?? L}; ${hoa[1].star} được thêm quyền chủ động (Hóa Quyền) ở cung ${Q}; ${hoa[2].star} được thêm uy tín (Hóa Khoa) ở cung ${K}; còn ${hoa[3].star} mang vướng mắc (Hóa Kỵ) ở cung ${KY} — chuyện ${MONTH_TOPIC[KY] ?? KY} là nơi cần làm chắc tay hơn.`,
+    ...(dv
+      ? [
+          `Năm nay nằm trong chặng 10 năm ${dv.daiVan[0]}–${dv.daiVan[1]} tuổi của bạn (đi qua cung ${dv.name}), nên phông nền chung vẫn là chuyện ${MONTH_TOPIC[dv.name]}. Những gì đọc cho năm nay là "thời tiết" của một năm; chặng 10 năm mới là "khí hậu".`,
+        ]
+      : []),
+  ];
   const paragraphs = [
     ...summary,
     `Tiền bạc — ${sources.join(' ')} ${leaks.join(' ')}`,
@@ -659,9 +684,20 @@ export function readYear(chart: Chart, y: number, now?: Date): YearReading {
     actions,
     evidence,
     paragraphs,
+    story,
     months,
     monthHighlights: monthHighlights(months),
   };
+}
+
+function daiVanStory(chart: Chart, p: Palace, majors: Star[]): string {
+  const dom = PALACES[p.name].domain;
+  const head = `Chặng này đi qua cung ${p.name}, nên chủ đề lớn của 10 năm là chuyện ${MONTH_TOPIC[p.name]}.`;
+  const m = majors[0];
+  if (!m) return `${head} Cung này không có sao chính: đây là giai đoạn linh hoạt, phụ thuộc nhiều vào hoàn cảnh.`;
+  const st = STAR_STORY[m.name];
+  const ds = starInDomain(m.name, dom);
+  return `${head} Sao chính ở đây là ${m.name}${st ? ` — ${st.role}` : ''}${p.majors.length ? '' : ' (mượn từ cung đối diện)'}; áp vào chặng này: ${lower(dot(ds))}`;
 }
 
 export function buildReading(chart: Chart, now = new Date()): Reading {
@@ -718,7 +754,7 @@ export function buildReading(chart: Chart, now = new Date()): Reading {
       const ky = hoa.find((x) => x.hoa === 'Kỵ')!;
       const notes = [
         `Cơ hội, nguồn lực dễ đến từ ${MONEY_SOURCE[loc.landsIn] ?? DOMAIN_LABEL.menh}.`,
-        `Chuyện hay vướng bận: ${DOMAIN_LABEL[PALACES[ky.landsIn]?.domain ?? 'menh']} — nên chuẩn bị kỹ ở mảng này.`,
+        `Chuyện hay vướng bận: ${ky.landsIn === 'Mệnh' ? 'chính bản thân bạn — sức khỏe, cảm xúc, quyết định cá nhân' : MONTH_TOPIC[ky.landsIn] ?? ky.landsIn} — nên chuẩn bị kỹ ở mảng này.`,
       ];
       if (p.tuan || p.triet) notes.push('Kết quả của giai đoạn này thường đến chậm hơn kỳ vọng — kiên nhẫn hơn bình thường.');
       const majors = p.majors.length ? p.majors : chart.palaces[mod12(p.branch + 6)].majors;
@@ -727,7 +763,7 @@ export function buildReading(chart: Chart, now = new Date()): Reading {
         palace: p.name,
         range: p.daiVan,
         current: age >= p.daiVan[0] && age <= p.daiVan[1],
-        summary: `10 năm chủ đề ${DOMAIN_LABEL[PALACES[p.name].domain]}. ${upper(starInDomain(majors[0]?.name ?? '', PALACES[p.name].domain) || '')}`.trim(),
+        summary: daiVanStory(chart, p, majors),
         hoa,
         notes,
         evidence: [
@@ -760,7 +796,7 @@ export function teaserFor(chart: Chart, step: number) {
         topic: 'menh',
         title: `${menh.headline.split(' — ')[0]} ở cung Mệnh của bạn nghĩa là gì?`,
         reveal: [menh.summary],
-        locked: 'Điểm mạnh, điểm hay vấp và việc nên làm cho từng cung, cùng 11 cung còn lại.',
+        locked: 'Phần diễn giải đầy đủ: vì sao lá số nói vậy, các sao đi kèm, việc nên làm — cho cung Mệnh và 11 cung còn lại.',
       };
     case 2:
       return {
@@ -793,7 +829,19 @@ export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { lock
     palaces: r.palaces.map((p, i) =>
       i === 0
         ? p
-        : { ...p, summary: '', strengths: [], cautions: [], advice: [], paragraphs: [], evidence: [], support: 0, challenge: 0, locked: true },
+        : {
+            ...p,
+            summary: '',
+            strengths: [],
+            cautions: [],
+            advice: [],
+            paragraphs: [],
+            evidence: [],
+            support: 0,
+            challenge: 0,
+            story: { ...p.story, paras: [], daily: [], extras: [], verdict: '', why: [] },
+            locked: true,
+          },
     ),
     daiVan: r.daiVan.map((d) => ({ ...d, hoa: [], notes: [], evidence: [] })),
     years: r.years.slice(0, 1).map((y) => ({
@@ -807,6 +855,7 @@ export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { lock
       actions: [],
       evidence: [],
       paragraphs: [...y.summary, y.money.sources[0]],
+      story: y.story.slice(0, 2),
       // Free: thấy nhịp cả năm (tháng thuận / cần chậm lại), chi tiết chỉ tháng hiện tại.
       months: y.months.map((m) =>
         m.current ? m : { ...m, todo: [], avoid: [], money: undefined, note: undefined, evidence: [], locked: true },
