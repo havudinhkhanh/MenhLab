@@ -5,6 +5,8 @@ import BirthForm from '@/components/BirthForm';
 import ChartReport from '@/components/ChartReport';
 import type { BirthInput, Conventions } from '@/lib/engine/birth';
 import type { computeReport } from '@/lib/report';
+import AiReportView from '@/components/AiReportView';
+import type { AiSectionMeta } from '@/lib/aiReport';
 
 type Report = ReturnType<typeof computeReport>;
 
@@ -15,7 +17,8 @@ async function post<T>(body: unknown): Promise<T> {
   return data as T;
 }
 
-export default function PreviewClient({ aiEnabled }: { aiEnabled: boolean }) {
+export default function PreviewClient({ aiEnabled, sections }: { aiEnabled: boolean; sections: AiSectionMeta[] }) {
+  const [book, setBook] = useState(false);
   const [draft, setDraft] = useState<{ input: BirthInput; conventions: Conventions } | null>(null);
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState('');
@@ -77,7 +80,10 @@ export default function PreviewClient({ aiEnabled }: { aiEnabled: boolean }) {
           <span>
             <b>Bản xem thử Pro (chỉ quản trị viên thấy).</b> Khách hàng thật thấy đúng nội dung này sau khi thanh toán.
           </span>
-          <button type="button" className="btn ghost" onClick={() => setReport(null)}>
+          <button type="button" className="btn ghost" onClick={() => {
+              setReport(null);
+              setBook(false);
+            }}>
             Thử lá số khác
           </button>
         </p>
@@ -95,7 +101,7 @@ export default function PreviewClient({ aiEnabled }: { aiEnabled: boolean }) {
       />
       <div className="wrap">
         <section className="section">
-          <h2>Thử AI (luận giải tổng hợp và hỏi đáp)</h2>
+          <h2>Thử AI: bản luận giải trọn đời và hỏi đáp</h2>
           {!aiEnabled ? (
             <p className="muted">
               Chưa bật: thêm biến ANTHROPIC_API_KEY trên Vercel rồi Redeploy để thử. Không bật AI thì gói Pro vẫn có đầy đủ phần luận giải theo
@@ -103,6 +109,21 @@ export default function PreviewClient({ aiEnabled }: { aiEnabled: boolean }) {
             </p>
           ) : (
             <>
+              {book && draft ? (
+                <AiReportView
+                  sections={sections}
+                  initial={{}}
+                  preview={draft}
+                  enabled
+                  header={{ name: report.chart.name || 'Bản xem thử', line: 'Bản luận giải trọn đời — xem thử, không lưu' }}
+                />
+              ) : (
+                <p>
+                  <button type="button" className="btn" onClick={() => setBook(true)}>
+                    Viết bản luận giải trọn đời (khoảng 2–4 phút)
+                  </button>
+                </p>
+              )}
               {synthesis ? (
                 <div className="prose">
                   {synthesis.split('\n').map((line, i) =>

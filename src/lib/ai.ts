@@ -75,6 +75,15 @@ function facts(chart: Chart, reading: Reading, stability?: string, life?: LifeRe
 export const aiEnabled = () => !!process.env.ANTHROPIC_API_KEY;
 
 async function call(messages: { role: 'user' | 'assistant'; content: string }[], maxTokens: number): Promise<string> {
+  return callAnthropic(SYSTEM, messages, maxTokens);
+}
+
+/** Gọi Claude API. Dùng chung cho hỏi đáp và bản luận giải trọn đời. */
+export async function callAnthropic(
+  system: string,
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  maxTokens: number,
+): Promise<string> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -85,7 +94,7 @@ async function call(messages: { role: 'user' | 'assistant'; content: string }[],
     body: JSON.stringify({
       model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5',
       max_tokens: maxTokens,
-      system: SYSTEM,
+      system,
       messages,
     }),
   });

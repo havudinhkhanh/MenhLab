@@ -157,7 +157,9 @@ function buildFoundation(chart: Chart, rd: Reading, patterns: PatternHit[]) {
     `Bản mệnh ${chart.banMenh.name} (hành ${chart.banMenh.element}) là thứ người Việt hay dùng để xem hợp màu, hợp tuổi. Trong luận giải Tử Vi, nó chỉ là chỉ dấu phụ — phần lớn ý nghĩa nằm ở các sao trong 12 cung mà bạn sẽ đọc dưới đây.`,
     du.length
       ? `Lá số có ${du.length} bộ sao được sách đặt tên (cách cục): ${list(du.map((p) => p.name))}. Bạn có thể xem điều kiện và độ phổ biến của từng cách ở phần Lá số gốc.`
-      : 'Lá số không có cách cục nổi bật nào trong danh sách sách cổ hay nhắc — điều này rất bình thường và không nói lên tốt hay xấu.',
+      : patterns.length
+        ? `Lá số chưa đủ điều kiện cách cục nào trong danh sách sách cổ hay nhắc, nhưng gần đủ ${list(patterns.map((p) => p.name))} (thiếu một điều kiện) — nên đọc như một nét thoáng qua, không phải điểm chính.`
+        : 'Lá số không có cách cục nổi bật nào trong danh sách sách cổ hay nhắc — điều này rất bình thường và không nói lên tốt hay xấu.',
   ];
   return [a.join(' '), b.join(' ')];
 }

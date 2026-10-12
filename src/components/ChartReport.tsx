@@ -204,6 +204,12 @@ function ReportBody(p: ReportProps) {
 
         <div className="report-main">
           <section id="doc-nhanh" className="section">
+            {isPro && chartId && p.ai?.enabled && (
+              <a className="book-cta no-print" href={`/la-so/${chartId}/luan-giai`}>
+                <b>Bản luận giải trọn đời →</b>
+                <span>Khoảng 15.000 chữ viết riêng cho lá số này, đọc như một cuốn sách: 12 khía cạnh, bức tranh liên cung, các giai đoạn đời, từng tháng năm nay, tổng kết và lời nhắn. In hoặc lưu PDF được.</span>
+              </a>
+            )}
             <h2>Đọc nhanh trong một phút</h2>
             <dl className="quick">
               {quick.map((q) => (
@@ -529,7 +535,7 @@ function ReportBody(p: ReportProps) {
                 <li>Diễn giải đầy đủ 11 cung còn lại bằng lời thường: công việc, tiền bạc, tình cảm, gia đình, sức khỏe — mỗi cung kèm việc nên làm và căn cứ</li>
                 <li>Từng chặng 10 năm: cơ hội đến từ đâu, chuyện gì cần chuẩn bị</li>
                 <li>Năm nay và năm sau: tiền đến từ đâu, dễ hao ở đâu, sức khỏe, tình cảm — và từng tháng nên làm gì</li>
-                {p.ai?.enabled && <li>Bản luận giải tổng hợp và {p.ai.limit} câu hỏi đáp về lá số</li>}
+                {p.ai?.enabled && <li>Bản luận giải trọn đời viết riêng cho bạn (khoảng 15.000 chữ, in/lưu PDF được) và {p.ai.limit} câu hỏi đáp về lá số</li>}
                 <li>Bản in / PDF</li>
               </ul>
               {chartId ? (

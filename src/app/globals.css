@@ -1404,3 +1404,94 @@ table.simple td {
 .hoa-notes li {
   line-height: 1.6;
 }
+
+/* ---------- Bản luận giải trọn đời (AI) ---------- */
+.narrow-report {
+  max-width: 780px;
+}
+.ai-cover {
+  padding: 28px 0 12px;
+  border-bottom: 2px solid var(--tu-soft);
+}
+.ai-cover h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+}
+.ai-toc {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 24px;
+  margin: 20px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card);
+  font-size: 0.9rem;
+}
+.ai-toc ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.ai-part > h2 {
+  margin-top: 48px;
+  color: var(--tu);
+}
+.ai-section {
+  scroll-margin-top: 16px;
+  margin-top: 28px;
+}
+.ai-section > h3 {
+  font-size: 1.3rem;
+}
+.ai-section p,
+.ai-section li {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.ai-section h4 {
+  margin: 22px 0 6px;
+  color: var(--tu);
+}
+.ai-list li {
+  margin: 8px 0;
+}
+.selfcheck,
+.decision {
+  font-family: var(--sans) !important;
+  font-size: 0.98rem !important;
+  padding: 10px 14px;
+  border-radius: var(--r);
+  background: var(--tu-soft);
+}
+.decision {
+  background: var(--gold-soft);
+}
+@media print {
+  .ai-part {
+    break-before: page;
+  }
+  .ai-section p,
+  .ai-section li {
+    font-size: 11pt;
+  }
+}
+
+.book-cta {
+  display: block;
+  margin: 8px 0 24px;
+  padding: 16px 18px;
+  border-radius: var(--r);
+  background: var(--tu);
+  color: #fff;
+  text-decoration: none;
+}
+.book-cta b {
+  display: block;
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+}
+.book-cta span {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}

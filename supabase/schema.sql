@@ -103,3 +103,16 @@ create table if not exists lab_results (
 );
 create unique index if not exists lab_results_chart_test on lab_results (chart_id, test) where chart_id is not null;
 alter table lab_results enable row level security;
+
+-- Bản luận giải trọn đời viết bằng AI (Pro): mỗi phần một dòng, ghi đè khi viết lại.
+create table if not exists report_sections (
+  chart_id uuid not null references charts(id) on delete cascade,
+  key text not null,
+  text text not null,
+  words int not null,
+  issues jsonb not null default '[]'::jsonb,
+  model text,
+  created_at timestamptz not null default now(),
+  primary key (chart_id, key)
+);
+alter table report_sections enable row level security;

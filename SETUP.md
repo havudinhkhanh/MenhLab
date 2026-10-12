@@ -131,9 +131,18 @@ Khi có cả payOS và thông tin ngân hàng, hệ thống ưu tiên payOS.
 
 1. Vào **console.anthropic.com** → tạo API key, nạp credit.
 2. Thêm `ANTHROPIC_API_KEY` vào Vercel. Có thể đặt `ANTHROPIC_MODEL` (mặc định `claude-sonnet-5-5`) và `AI_QUESTIONS_LIMIT` (mặc định 10 câu/lá số).
-3. Redeploy. Lá số Pro sẽ có mục "Luận giải tổng hợp và hỏi đáp".
+3. Chạy lại `supabase/schema.sql` trong Supabase (SQL Editor → Run) để có bảng `report_sections` — nơi lưu "Bản luận giải trọn đời". Chạy lại nhiều lần không sao.
+4. Redeploy. Lá số Pro sẽ có:
+   - **Bản luận giải trọn đời** (`/la-so/<id>/luan-giai`): 19 phần, khoảng 15.000 chữ, viết riêng theo tên khách (anh/chị + tên). Lần mở đầu tiên, trình duyệt cho AI viết lần lượt từng phần (4 phần cùng lúc, khoảng 2–4 phút); phần nào xong hiện ngay và được lưu lại — lần sau mở là có sẵn, không tốn thêm.
+   - Hỏi đáp về lá số.
 
-Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy tắc — AI chỉ là phần thêm. Bản tổng hợp chỉ tạo một lần rồi lưu lại, nên mỗi lá số tốn chi phí AI rất ít.
+**Vì sao bản AI không "bịa":** mỗi phần chỉ nhận đúng dữ kiện máy an sao đã tính, kèm nghĩa từng sao theo từ điển MệnhLab. Văn bản trả về được kiểm tra tự động trước khi lưu: viết "sao X ở cung Y" mà sai vị trí, ghi sai độ sáng, dùng từ hù dọa ("chắc chắn sẽ", "tai nạn", "phá sản"...), dùng thuật ngữ tiếng Anh, hoặc quá ngắn → AI phải viết lại kèm lời nhắc lỗi. Lời nhắc nằm ở `src/lib/aiReport.ts` (`REPORT_SYSTEM` và hàm `brief`) — muốn đổi giọng văn, độ dài, cấu trúc từng phần thì sửa ở đó.
+
+**Thời gian chạy:** route `/api/report` đặt `maxDuration = 300` giây. Gói Vercel Hobby có Fluid Compute cho phép tới 300 giây; nếu tài khoản của bạn giới hạn 60 giây, giảm `maxTokens` của các phần dài trong `AI_SECTIONS`.
+
+**Thử giao diện khi chưa có API key:** đặt `AI_MOCK=1` — hệ thống ghép tạm các nhận định theo quy tắc thay cho AI (chỉ để xem bố cục, không phải chất lượng thật). Nhớ xóa biến này trước khi public.
+
+Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy tắc — AI là phần thêm.
 
 ---
 
@@ -142,7 +151,7 @@ Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy t
 **Cách 1 — nhanh nhất, chỉ cần Vercel:** chỉ cần đặt 2 biến `ADMIN_KEY` và `APP_SECRET` (bước 1) là đủ, chưa cần Supabase hay Resend.
 1. Vào `https://<trang của bạn>/admin`, nhập `ADMIN_KEY` → Đăng nhập.
 2. Bấm **Mở bản xem thử** (trang `/admin/thu-pro`).
-3. Nhập ngày giờ sinh bất kỳ → **Xem bản Pro**. Bạn thấy đúng nội dung khách nhận được sau khi mua: 12 cung có căn cứ, Tứ Hóa từng đại vận, lưu niên 2 năm, bản in. Nếu đã đặt `ANTHROPIC_API_KEY`, có thêm nút thử luận giải AI và hỏi đáp.
+3. Nhập ngày giờ sinh bất kỳ (nên điền cả tên để thấy cách xưng hô) → **Xem bản Pro**. Bạn thấy đúng nội dung khách nhận được sau khi mua. Nếu đã đặt `ANTHROPIC_API_KEY`, kéo xuống cuối có nút **Viết bản luận giải trọn đời** (viết thử đủ 19 phần, không lưu) và ô hỏi đáp.
 4. Không lưu gì, không gửi email, không tạo đơn hàng. Bấm **Thử lá số khác** để đổi người.
 
 **Cách 2 — thử trọn luồng thật (cần Supabase):**
