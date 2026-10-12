@@ -7,7 +7,8 @@
  * 3. Không dự đoán bệnh tật, tai nạn, tử vong, ly hôn, phá sản.
  * 4. Kèm câu hỏi tự kiểm chứng để người đọc đối chiếu với đời thực.
  */
-import { CHI } from './engine/canchi';
+import { CAN, CHI } from './engine/canchi';
+import { leapMonthOfYear, lunarToSolar, addDays, solarToLunar } from './engine/lunar';
 import {
   daiVanAt,
   tamPhuong,
@@ -28,6 +29,9 @@ import {
   FOCUS,
   HOA_PLAIN,
   MINOR_PLAIN,
+  MONTH_AVOID,
+  MONTH_DO,
+  MONTH_TOPIC,
   MONEY_LEAK,
   MONEY_SOURCE,
   MONEY_TODO_LEAK,
@@ -93,6 +97,38 @@ export interface YearReading {
   evidence: string[];
   /** Bản gộp văn bản (dùng cho email, AI). */
   paragraphs: string[];
+  /** 12 tháng âm lịch (kèm tháng nhuận nếu có): tháng nào nên làm gì. */
+  months: MonthReading[];
+  /** Tóm tắt nhanh: tháng thuận nhất, tháng nên chậm lại. */
+  monthHighlights: string[];
+  locked?: boolean;
+}
+
+export type MonthTone = 'thuan' | 'binh' | 'can-trong';
+
+export interface MonthReading {
+  /** Tháng âm lịch 1..12. */
+  month: number;
+  leap: boolean;
+  /** "Tháng Giêng", "Tháng Tư nhuận"... */
+  label: string;
+  canChi: string;
+  /** Ngày dương lịch bắt đầu / kết thúc, dạng "d/m/yyyy". */
+  from: string;
+  to: string;
+  palace: string;
+  tone: MonthTone;
+  score: number;
+  /** Một câu: tháng này xoay quanh chuyện gì. */
+  focus: string;
+  todo: string[];
+  avoid: string[];
+  /** Cơ hội tiền trong tháng (nếu có tín hiệu). */
+  money?: string;
+  note?: string;
+  evidence: string[];
+  current?: boolean;
+  past?: boolean;
   locked?: boolean;
 }
 
@@ -324,7 +360,170 @@ function hoaLanding(chart: Chart, stem: number) {
 /** Vị trí Lộc Tồn theo Can (Giáp Dần, Ất Mão, Bính Mậu Tỵ, Đinh Kỷ Ngọ, Canh Thân, Tân Dậu, Nhâm Hợi, Quý Tý). */
 const LOC_TON = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
 
-export function readYear(chart: Chart, y: number): YearReading {
+export const MONTH_NAMES = ['Giêng', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín', 'Mười', 'Mười Một', 'Chạp'];
+const fmtD = ([d, m, y]: [number, number, number]) => `${d}/${m}/${y}`;
+
+/**
+ * Lưu nguyệt theo phép "Đẩu Quân" (Thái Thứ Lang, Tử Vi Đẩu Số Tân Biên):
+ * từ cung lưu Thái Tuế của năm, đếm nghịch đến tháng sinh (Thái Tuế là tháng 1), rồi từ đó đếm thuận
+ * đến giờ sinh (bắt đầu là giờ Tý) — được cung tháng Giêng. Các tháng sau đi thuận mỗi tháng một cung.
+ * Can tháng theo "ngũ hổ độn" từ Can năm; Tứ Hóa của tháng theo Can tháng.
+ */
+export function dauQuanBranch(chart: Chart, y: number): number {
+  const bm = chart.starMonth ?? chart.birth.lunar.month;
+  return mod12(yearCanChi(y).chi - (bm - 1) + chart.birth.branch);
+}
+
+export function readMonths(chart: Chart, y: number, now?: Date): MonthReading[] {
+  const yc = yearCanChi(y);
+  const dq = dauQuanBranch(chart, y);
+  const yearHoa = TU_HOA[yc.can];
+  const lt = LOC_TON[yc.can];
+  const leapM = leapMonthOfYear(y);
+  const split = (chart.conventions?.leapRule ?? 'tach-15') === 'tach-15';
+  const today = now ? solarToLunar(now.getDate(), now.getMonth() + 1, now.getFullYear()) : undefined;
+
+  // Thứ tự các tháng trong năm âm lịch (tháng nhuận đứng sau tháng chính).
+  const seq: { m: number; leap: boolean }[] = [];
+  for (let m = 1; m <= 12; m++) {
+    seq.push({ m, leap: false });
+    if (m === leapM) seq.push({ m, leap: true });
+  }
+  const starts = seq.map((x) => lunarToSolar(1, x.m, y, x.leap)!);
+  starts.push(lunarToSolar(1, 1, y + 1, false)!);
+
+  return seq.map(({ m, leap }, i) => {
+    const b = mod12(dq + m - 1);
+    const pal = chart.palaces[b];
+    const P = pal.name;
+    const monthCan = ((yc.can % 5) * 2 + 2 + (m - 1)) % 10;
+    const monthChi = (m + 1) % 12;
+    const mh = TU_HOA[monthCan];
+    const land = (star: string) => where(chart, star)?.name ?? '—';
+    const [mLoc, mQuyen, mKhoa, mKy] = mh.map(land);
+    const yearKy = land(yearHoa[3]);
+
+    // Điểm: tín hiệu thuận/nghịch rơi vào cung lưu nguyệt (minh bạch, liệt kê trong "Vì sao?").
+    let score = 0;
+    const why: string[] = [];
+    const add = (v: number, t: string) => {
+      score += v;
+      why.push(`${v > 0 ? '+' : ''}${v} ${t}`);
+    };
+    if (mLoc === P) add(2, `${mh[0]} hóa Lộc (Can tháng) rơi vào cung ${P}`);
+    if (mQuyen === P) add(1, `${mh[1]} hóa Quyền (Can tháng) rơi vào cung ${P}`);
+    if (mKhoa === P) add(1, `${mh[2]} hóa Khoa (Can tháng) rơi vào cung ${P}`);
+    if (mKy === P) add(-2, `${mh[3]} hóa Kỵ (Can tháng) rơi vào cung ${P}`);
+    yearHoa.slice(0, 3).forEach((st, k) => {
+      if (land(st) === P) add(1, `${st} hóa ${HOA_ORDER[k]} của năm nằm ở cung ${P}`);
+    });
+    if (yearKy === P) add(-1, `${yearHoa[3]} hóa Kỵ của năm nằm ở cung ${P}`);
+    if (lt === b) add(1, `Lưu Lộc Tồn của năm ở cung ${P}`);
+    if (mod12(lt + 1) === b) add(-1, `Lưu Kình Dương của năm ở cung ${P}`);
+    if (mod12(lt - 1) === b) add(-1, `Lưu Đà La của năm ở cung ${P}`);
+    const good = pal.goodStars.length;
+    const bad = pal.badStars.length;
+    if (good - bad >= 2) add(1, `cung ${P} có nhiều cát tinh hơn sát tinh (${good}/${bad})`);
+    if (bad - good >= 2) add(-1, `cung ${P} có nhiều sát tinh hơn cát tinh (${bad}/${good})`);
+    const tone: MonthTone = score >= 2 ? 'thuan' : score <= -2 ? 'can-trong' : 'binh';
+
+    const topic = MONTH_TOPIC[P];
+    const focus =
+      tone === 'thuan'
+        ? `Tháng thuận cho chuyện ${topic} — nên chủ động.`
+        : tone === 'can-trong'
+          ? `Tháng xoay quanh chuyện ${topic} nhưng có nhiều vướng — làm chắc, đừng vội.`
+          : `Tháng xoay quanh chuyện ${topic}.`;
+
+    const chance =
+      mLoc === '—'
+        ? ''
+        : mLoc === P
+          ? 'Hóa Lộc của tháng nằm ngay ở chuyện này — cơ hội rõ nhất của tháng nằm ở đây.'
+          : mLoc === 'Tài Bạch'
+            ? 'Tháng có tín hiệu thu nhập tăng: lương thưởng, doanh thu, khoản thu thêm — chủ động đòi, chốt, thu về.'
+            : `Cơ hội, tiền bạc trong tháng dễ đến từ ${MONEY_SOURCE[mLoc]}.`;
+    const todo = uniq([
+      MONTH_DO[P],
+      chance,
+      mQuyen === 'Quan Lộc' && P !== 'Quan Lộc' ? 'Ở công việc, hợp lên tiếng và nhận thêm phần chủ động.' : '',
+      mKhoa !== P && mKhoa !== '—' && mKhoa !== mLoc
+        ? mKhoa === 'Mệnh'
+          ? 'Dễ được người khác tin tưởng, giúp đỡ — hợp nhờ vả, xin góp ý.'
+          : `Dễ được tin tưởng, giúp đỡ ở chuyện ${MONTH_TOPIC[mKhoa]}.`
+        : '',
+    ]).slice(0, 3);
+    const avoid = uniq([mKy !== '—' ? MONTH_AVOID[mKy] : '', mKy !== P && tone === 'can-trong' ? MONTH_AVOID[P] : '']).slice(0, 2);
+
+    let money: string | undefined;
+    if (lt === b) money = 'Lưu Lộc Tồn của năm nằm ở cung tháng: hợp thu tiền về và để dành, hơn là tiêu.';
+    if (mKy === 'Tài Bạch') money = `Tiền dễ hao vì ${MONEY_LEAK['Tài Bạch']} — giữ chặt ngân sách tháng này.`;
+
+    const label = `Tháng ${MONTH_NAMES[m - 1]}${leap ? ' nhuận' : ''}`;
+    const note = leap
+      ? split
+        ? `Tháng nhuận: từ mùng 1 đến 15 tính như tháng ${MONTH_NAMES[m - 1]}, từ 16 trở đi tính như tháng ${MONTH_NAMES[m % 12]} (theo quy ước bạn chọn).`
+        : `Tháng nhuận: tính như tháng ${MONTH_NAMES[m - 1]} (theo quy ước bạn chọn).`
+      : undefined;
+
+    const from = starts[i];
+    const to = addDays(starts[i + 1][0], starts[i + 1][1], starts[i + 1][2], -1);
+    let current: boolean | undefined;
+    let past: boolean | undefined;
+    if (today) {
+      current = today.year === y && today.month === m && today.leap === leap;
+      const order = (yy: number, mm: number, lp: boolean) => yy * 100 + mm * 2 + (lp ? 1 : 0);
+      past = order(today.year, today.month, today.leap) > order(y, m, leap);
+    }
+
+    return {
+      month: m,
+      leap,
+      label,
+      canChi: `${CAN[monthCan]} ${CHI[monthChi]}`,
+      from: fmtD(from),
+      to: fmtD(to),
+      palace: P,
+      tone,
+      score,
+      focus,
+      todo,
+      avoid,
+      money,
+      note,
+      current,
+      past,
+      evidence: [
+        `Cung tháng Giêng (Đẩu Quân) năm ${CAN[yc.can]} ${CHI[yc.chi]}: ${CHI[dq]} — từ lưu Thái Tuế ${CHI[yc.chi]} đếm nghịch đến tháng sinh ${chart.starMonth ?? chart.birth.lunar.month}, rồi đếm thuận đến giờ ${CHI[chart.birth.branch]}`,
+        `${label} lưu tại ${CHI[b]} (cung ${P}); Can Chi tháng ${CAN[monthCan]} ${CHI[monthChi]}`,
+        `Tứ Hóa của tháng: ${mh.map((st, k) => `${st} hóa ${HOA_ORDER[k]} → ${[mLoc, mQuyen, mKhoa, mKy][k]}`).join('; ')}`,
+        why.length ? `Điểm tháng ${score > 0 ? '+' : ''}${score}: ${why.join('; ')}` : 'Điểm tháng 0: không có tín hiệu thuận hay nghịch rơi vào cung lưu nguyệt',
+      ],
+    };
+  });
+}
+
+function monthHighlights(all: MonthReading[]): string[] {
+  const list = (xs: MonthReading[]) => xs.slice(0, 3).map((x) => `${x.label.replace('Tháng ', '')} (${MONTH_TOPIC[x.palace]})`).join(', ');
+  const ahead = all.filter((x) => !x.past);
+  const passed = all.filter((x) => x.past);
+  const prefix = passed.length ? 'Các tháng còn lại — ' : '';
+  const best = ahead.filter((x) => x.tone === 'thuan').sort((a, b) => b.score - a.score);
+  const slow = ahead.filter((x) => x.tone === 'can-trong').sort((a, b) => a.score - b.score);
+  const out: string[] = [];
+  if (best.length) out.push(`${prefix}tháng thuận để chủ động: ${list(best)}.`);
+  if (slow.length) out.push(`${prefix}tháng nên làm chắc, đừng vội: ${list(slow)}.`);
+  if (ahead.length && !best.length && !slow.length)
+    out.push(`${prefix}khá đều, không có tháng nào nổi bật hẳn — giữ nhịp ổn định, tập trung vào việc của từng tháng bên dưới.`);
+  const pb = passed.filter((x) => x.tone !== 'binh');
+  if (pb.length)
+    out.push(
+      `Đã qua: ${pb.map((x) => `${x.label.replace('Tháng ', '')} (${x.tone === 'thuan' ? 'thuận' : 'làm chắc'})`).join(', ')} — mở ra đối chiếu xem có khớp với điều đã xảy ra không.`,
+    );
+  return out.map(upper);
+}
+
+export function readYear(chart: Chart, y: number, now?: Date): YearReading {
   const l = yearlyLuck(chart, y);
   const pal = (b: number) => chart.palaces[mod12(b)];
   const TT = pal(l.thaiTueBranch).name;
@@ -433,6 +632,7 @@ export function readYear(chart: Chart, y: number): YearReading {
     ...(dv ? [`Đại vận cung ${dv.name} (${dv.daiVan[0]}–${dv.daiVan[1]}), Can ${dv.stemName}: ${dvHoa.map((x) => `${x.star} hóa ${x.hoa} → ${x.landsIn}`).join('; ')}`] : []),
   ];
 
+  const months = readMonths(chart, y, now);
   const paragraphs = [
     ...summary,
     `Tiền bạc — ${sources.join(' ')} ${leaks.join(' ')}`,
@@ -459,6 +659,8 @@ export function readYear(chart: Chart, y: number): YearReading {
     actions,
     evidence,
     paragraphs,
+    months,
+    monthHighlights: monthHighlights(months),
   };
 }
 
@@ -536,8 +738,10 @@ export function buildReading(chart: Chart, now = new Date()): Reading {
       };
     });
 
-  const thisYear = new Date(now).getFullYear();
-  const years = [thisYear, thisYear + 1].map((y) => readYear(chart, y));
+  const nd = new Date(now);
+  // Năm âm lịch hiện tại (trước Tết vẫn tính là năm cũ).
+  const thisYear = solarToLunar(nd.getDate(), nd.getMonth() + 1, nd.getFullYear()).year;
+  const years = [thisYear, thisYear + 1].map((y) => readYear(chart, y, now));
 
   return { overview, overviewText, palaces, daiVan, years, currentAge: age };
 }
@@ -577,7 +781,7 @@ export function teaserFor(chart: Chart, step: number) {
         topic: 'offer',
         title: `Năm ${y.canChi}: tiền của bạn đến từ đâu?`,
         reveal: [y.summary[0], y.money.sources[0]],
-        locked: 'Bản Pro: tiền dễ hao ở đâu, việc nên làm, công việc, tình cảm, gia đình, sức khỏe năm nay và năm sau; 12 cung đầy đủ.',
+        locked: `Bản Pro: từng tháng âm lịch nên làm gì, nên tránh gì; tiền dễ hao ở đâu, công việc, tình cảm, gia đình, sức khỏe năm nay và năm sau; 12 cung đầy đủ.`,
       };
   }
 }
@@ -603,6 +807,10 @@ export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { lock
       actions: [],
       evidence: [],
       paragraphs: [...y.summary, y.money.sources[0]],
+      // Free: thấy nhịp cả năm (tháng thuận / cần chậm lại), chi tiết chỉ tháng hiện tại.
+      months: y.months.map((m) =>
+        m.current ? m : { ...m, todo: [], avoid: [], money: undefined, note: undefined, evidence: [], locked: true },
+      ),
       locked: true,
     })),
   };

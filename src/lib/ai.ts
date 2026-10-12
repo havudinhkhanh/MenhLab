@@ -49,6 +49,9 @@ function facts(chart: Chart, reading: Reading, stability?: string) {
         suc_khoe: y.health,
         viec_nen_lam: y.actions,
         can_cu: y.evidence,
+        tung_thang: y.months
+          .filter((m) => !m.locked && !m.past)
+          .map((m) => ({ thang: m.label, duong_lich: `${m.from}–${m.to}`, cung: m.palace, nhip: m.tone, nen_lam: m.todo, nen_tranh: m.avoid, tien: m.money })),
       })),
       tuoi_mu_hien_tai: reading.currentAge,
     },
@@ -88,7 +91,7 @@ export async function aiSynthesis(chart: Chart, reading: Reading, stability?: st
     [
       {
         role: 'user',
-        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability)}\n\nHãy viết bản luận giải tổng hợp khoảng 1000–1400 chữ, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bạn là người thế nào\n## Công việc và cách kiếm tiền\n## Năm nay: tiền đến từ đâu, dễ hao ở đâu\n## Năm nay: công việc, tình cảm, gia đình\n## Sức khỏe: lời nhắc theo lá số\n## 10 năm hiện tại\n## Năm việc nên làm ngay\nKhông dùng bảng. Không dùng in đậm.`,
+        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability)}\n\nHãy viết bản luận giải tổng hợp khoảng 1000–1400 chữ, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bạn là người thế nào\n## Công việc và cách kiếm tiền\n## Năm nay: tiền đến từ đâu, dễ hao ở đâu\n## Năm nay: công việc, tình cảm, gia đình\n## Sức khỏe: lời nhắc theo lá số\n## Các tháng tới: tháng nào nên làm gì\n## 10 năm hiện tại\n## Năm việc nên làm ngay\nKhông dùng bảng. Không dùng in đậm.`,
       },
     ],
     2500,

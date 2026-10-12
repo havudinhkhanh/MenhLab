@@ -316,3 +316,51 @@ export const DOMAIN_CAUTION_ADVICE: Partial<Record<DomainKey, string>> = {
   phuc: 'Có thói quen cân bằng tinh thần: thể thao, thiền, sở thích lâu dài.',
   phumau: 'Giữ liên lạc đều với cha mẹ; trao đổi rõ ràng với cấp trên.',
 };
+
+/** Lưu nguyệt rơi vào cung này → tháng nên dồn sức làm gì. */
+export const MONTH_DO: Record<string, string> = {
+  Mệnh: 'Ưu tiên việc của chính bạn: chốt các quyết định cá nhân đang treo, chăm chút sức khỏe và hình ảnh bản thân.',
+  'Huynh Đệ': 'Gặp anh chị em, bạn thân, cộng sự; bàn chuyện hợp tác nhưng ghi rõ ai làm phần nào.',
+  'Phu Thê': 'Dành thời gian cho người thương; với đối tác, rà lại thỏa thuận và cùng chốt kế hoạch.',
+  'Tử Tức': 'Để tâm chuyện con cái, học hành; đẩy tiến độ dự án sáng tạo hoặc sản phẩm đang làm dở.',
+  'Tài Bạch': 'Rà thu chi, thu hồi các khoản người khác còn nợ, chốt giá với khách hoặc đề xuất tăng lương.',
+  'Tật Ách': 'Giảm tải, ngủ đủ, đặt lịch khám nếu đã lâu chưa khám; không nhận thêm việc quá sức.',
+  'Thiên Di': 'Hợp đi công tác, gặp khách hàng mới, thử môi trường mới; chuẩn bị kỹ lịch trình.',
+  'Nô Bộc': 'Kết nối lại khách hàng cũ, đồng nghiệp; nhờ người giới thiệu; sắp xếp lại người làm cùng.',
+  'Quan Lộc': 'Dồn sức cho công việc chính: nhận dự án, báo cáo kết quả với cấp trên, hoàn tất việc tồn đọng.',
+  'Điền Trạch': 'Lo việc nhà: sửa chữa, dọn dẹp, rà giấy tờ nhà đất; hợp đi xem nhà nếu đang định mua hoặc thuê.',
+  'Phúc Đức': 'Chậm lại một chút: thăm họ hàng, nghỉ ngơi, làm điều khiến bạn an lòng; đừng xếp lịch kín mít.',
+  'Phụ Mẫu': 'Thăm cha mẹ; làm các thủ tục giấy tờ, hồ sơ; giữ liên lạc tốt với cấp trên.',
+};
+
+/** Hóa Kỵ của tháng rơi vào cung này → tháng nên tránh gì. */
+export const MONTH_AVOID: Record<string, string> = {
+  Mệnh: 'Đừng quyết định lớn lúc đang mệt hoặc nóng giận; đừng ôm hết việc vào mình.',
+  'Huynh Đệ': 'Hạn chế cho anh em, bạn bè vay khoản lớn; chuyện gì cũng nói rõ để khỏi mất lòng.',
+  'Phu Thê': 'Dễ hiểu lầm với người thương hoặc đối tác — nói chuyện sớm, đừng im lặng cho qua.',
+  'Tử Tức': 'Chuyện con cái hoặc dự án dễ khiến bạn lo; chưa nên đổ thêm tiền vào khoản đầu tư dài hạn còn chưa rõ.',
+  'Tài Bạch': 'Không chi lớn ngoài kế hoạch, không cho vay, không đầu cơ.',
+  'Tật Ách': 'Đừng gồng: thấy mệt thì nghỉ, có triệu chứng lạ thì đi khám.',
+  'Thiên Di': 'Đi xa thì kiểm tra kỹ giấy tờ, lịch trình; chưa nên vội đổi môi trường.',
+  'Nô Bộc': 'Kiểm tra kỹ trước khi giao tiền hoặc việc lớn cho người khác; không đứng ra bảo lãnh.',
+  'Quan Lộc': 'Giữ trao đổi công việc bằng văn bản; đọc kỹ hợp đồng; đừng quyết nghỉ việc lúc bực.',
+  'Điền Trạch': 'Chưa nên ký giao dịch nhà đất nếu pháp lý chưa rõ; để sẵn một khoản sửa chữa.',
+  'Phúc Đức': 'Dễ suy nghĩ nhiều, khó ngủ — bớt lướt mạng ban đêm, tránh chuyện thị phi trong họ hàng.',
+  'Phụ Mẫu': 'Nộp giấy tờ, thuế phí đúng hạn; nhẫn nại hơn với cấp trên và cha mẹ.',
+};
+
+/** Cách gọi ngắn, đời thường cho chủ đề của tháng theo cung. */
+export const MONTH_TOPIC: Record<string, string> = {
+  Mệnh: 'bản thân bạn',
+  'Huynh Đệ': 'anh chị em, bạn thân, cộng sự',
+  'Phu Thê': 'tình cảm, vợ chồng, đối tác',
+  'Tử Tức': 'con cái, dự án riêng',
+  'Tài Bạch': 'tiền bạc',
+  'Tật Ách': 'sức khỏe, nhịp sinh hoạt',
+  'Thiên Di': 'đi lại, môi trường bên ngoài',
+  'Nô Bộc': 'đồng nghiệp, khách hàng, bạn bè',
+  'Quan Lộc': 'công việc',
+  'Điền Trạch': 'nhà cửa, tài sản',
+  'Phúc Đức': 'tinh thần, họ hàng',
+  'Phụ Mẫu': 'cha mẹ, cấp trên, giấy tờ',
+};

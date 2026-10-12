@@ -76,6 +76,8 @@ export interface Chart {
   birth: ResolvedBirth;
   conventions: Conventions;
   canChi: { year: string; month: string; day: string; hour: string };
+  /** Tháng âm lịch dùng để an sao (đã xử lý tháng nhuận theo quy ước). */
+  starMonth?: number;
   yearCan: number;
   yearChi: number;
   banMenh: { name: string; element: Element };
@@ -273,6 +275,7 @@ export function buildChart(input: BirthInput, conv: Conventions = DEFAULT_CONVEN
       day: `${CAN[day.can]} ${CHI[day.chi]}`,
       hour: `${CAN[hourCan]} ${CHI[branch]}`,
     },
+    starMonth: monthLunar,
     yearCan,
     yearChi,
     banMenh,

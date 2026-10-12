@@ -999,3 +999,79 @@ table.simple td {
 .actions-box li {
   margin: 4px 0;
 }
+
+/* Lưu nguyệt: tháng nào nên làm gì */
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .month-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.month-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 10px 14px;
+  background: var(--card);
+  min-width: 0;
+}
+.month-card.current {
+  border: 2px solid var(--tu);
+  grid-column: 1 / -1;
+}
+.month-card.past {
+  opacity: 0.8;
+}
+.month-card.past > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.month-card.past > summary::-webkit-details-marker {
+  display: none;
+}
+.month-card.locked-month {
+  background: var(--paper-2);
+}
+.month-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+.month-name {
+  font-weight: 700;
+}
+.month-date {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.tone {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  color: var(--muted);
+}
+.tone-thuan {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+.tone-can {
+  background: var(--son-soft);
+  color: var(--son);
+}
+.tone-now {
+  background: var(--tu);
+  color: var(--card);
+}
+.month-focus {
+  font-weight: 600;
+  margin: 6px 0;
+}
+.month-money {
+  margin: 4px 0;
+}

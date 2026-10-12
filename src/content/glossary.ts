@@ -228,6 +228,12 @@ const VAN_HAN: Omit<Term, 'key'>[] = [
   },
   { term: 'Tiểu hạn', group: 'van-han', short: 'Cung đại diện cho từng năm tuổi, tính theo tuổi và giới tính.' },
   { term: 'Lưu niên', group: 'van-han', short: 'Ảnh hưởng của năm hiện tại (ví dụ năm Bính Ngọ 2026) lên lá số gốc.' },
+  {
+    term: 'Lưu nguyệt',
+    group: 'van-han',
+    short: 'Cung đại diện cho từng tháng âm lịch trong năm — dùng để xem "tháng nào nên làm gì".',
+    long: 'Theo phép "Đẩu Quân" phổ biến ở Việt Nam: từ cung lưu Thái Tuế của năm, đếm ngược đến tháng sinh, rồi đếm xuôi đến giờ sinh — được cung của tháng Giêng; mỗi tháng sau tiến một cung theo chiều kim đồng hồ. Can của tháng tính theo Can năm (ngũ hổ độn), và Tứ Hóa của tháng theo Can tháng. MệnhLab chấm điểm mỗi tháng bằng các tín hiệu rơi vào cung đó (Hóa Lộc, Quyền, Khoa, Kỵ của tháng và năm, lưu Lộc Tồn, Kình, Đà, cát/sát tinh) và ghi rõ cách cộng điểm trong phần "Vì sao?". Đây là lớp chi tiết nhất nên cũng nhạy nhất với sai lệch giờ sinh và tháng sinh; coi như gợi ý sắp xếp việc, không phải lịch định sẵn.',
+  },
   { term: 'Lưu Thái Tuế', group: 'van-han', short: 'Cung mang Địa Chi của năm đang xét — "trọng tâm" của năm đó.' },
   {
     term: 'Lưu Tứ Hóa',
