@@ -184,6 +184,12 @@ export default function ChartReport(p: ReportProps) {
       <section id="do-nhay" className="section">
         <h2>Độ nhạy giờ sinh</h2>
         <p>{sensitivity.summary}</p>
+        {sensitivity.level !== 'cao' && (
+          <p className="note">
+            Không chắc giờ sinh? Thử <a href="/chinh-gio">tìm giờ sinh theo sự kiện đời</a>: so các canh giờ có thể với những sự kiện lớn
+            trong đời bạn.
+          </p>
+        )}
         {sensitivity.windowMinutes > 0 && (
           <>
             <div className="meter" aria-label={`Độ ổn định ${Math.round(sensitivity.stability * 100)}%`}>
@@ -221,8 +227,43 @@ export default function ChartReport(p: ReportProps) {
         </ol>
         <p className="small muted" style={{ marginTop: 12 }}>
           Quy ước đang dùng: {TIME_MODE[chart.conventions.timeMode]}; giờ Tý {chart.conventions.dayChange === '23h' ? 'đổi ngày lúc 23h' : 'đổi ngày lúc 0h'}; tháng
-          nhuận {chart.conventions.leapRule === 'tach-15' ? 'tách tại ngày 15' : 'tính như tháng chính'}. <a href="/phuong-phap">Phương pháp chi tiết</a>.
+          nhuận {chart.conventions.leapRule === 'tach-15' ? 'tách tại ngày 15' : 'tính như tháng chính'}; độ sáng sao theo{' '}
+          {chart.brightnessSchool === 'viet' ? 'sách Tử Vi Việt Nam' : 'Tử Vi Đẩu Số Toàn Thư'}. <a href="/phuong-phap">Phương pháp chi tiết</a>.
         </p>
+        <h3>Hai trường phái độ sáng</h3>
+        {chart.brightnessDiffs.length === 0 ? (
+          <p className="small">Trên lá số này, bảng sách Việt và bảng Toàn Thư cho cùng độ sáng ở mọi sao có trong cả hai bảng.</p>
+        ) : (
+          <>
+            <p className="small">
+              {chart.brightnessDiffs.length} sao trên lá số này được hai bảng xếp độ sáng khác nhau. Lá số đang dùng bảng{' '}
+              {chart.brightnessSchool === 'viet' ? 'sách Việt' : 'Toàn Thư'}; phần luận giải thay đổi theo bảng được chọn. Dấu "—" là
+              bảng đó không ghi độ sáng ở cung này.
+            </p>
+            <table className="simple" style={{ maxWidth: 560 }}>
+              <thead>
+                <tr>
+                  <th>Sao</th>
+                  <th>Cung</th>
+                  <th>Sách Việt</th>
+                  <th>Toàn Thư</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chart.brightnessDiffs.map((d) => (
+                  <tr key={d.star + d.branchName}>
+                    <td>
+                      <T name={d.star}>{d.star}</T>
+                    </td>
+                    <td>{d.branchName}</td>
+                    <td>{d.viet}</td>
+                    <td>{d.toanThu}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
       </section>
 
       {!isPro && (

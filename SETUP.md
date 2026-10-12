@@ -228,9 +228,21 @@ npm run dev                  # mở http://localhost:3000
 npm test                     # kiểm thử engine lá số và luận giải
 ```
 
-## 13. Những gì chưa có (gợi ý làm tiếp)
+## 13. Công cụ "Tìm giờ sinh" (`/chinh-gio`)
+
+Dành cho người không biết hoặc không chắc giờ sinh. Người dùng nhập ngày sinh, chọn các canh giờ có thể, chấm vài mô tả tính cách (ẩn tên sao), và nhập 3–8 sự kiện lớn có năm (kết hôn, sinh con, đổi việc, chuyển nhà, đi xa...). Hệ thống chấm từng canh giờ theo tiểu hạn, lưu Thái Tuế, đại vận và lưu Tứ Hóa năm đó, rồi xếp hạng — kèm lý do của từng điểm.
+
+- Chạy hoàn toàn trên trình duyệt, không lưu gì lên máy chủ, không cần cấu hình thêm.
+- Ngưỡng kết luận được hiệu chuẩn bằng mô phỏng: với sự kiện ngẫu nhiên, "khá rõ" chỉ xảy ra khoảng 5% số lần. Chạy lại hiệu chuẩn khi đổi cách chấm điểm: `npx tsx scripts/calibrate-rectify.ts` rồi dán kết quả vào `src/lib/engine/rectify.ts`.
+- Đổi danh sách loại sự kiện và cung tương ứng trong `EVENT_KINDS`, cách chấm điểm trong `scoreEvent` (cùng file).
+- Nếu muốn thu phí tính năng này, có thể chuyển nó thành quyền lợi của gói Pro.
+
+## 14. Bảng độ sáng sao theo trường phái
+
+Mặc định dùng bảng sách Tử Vi Việt Nam (thang 5 mức M/V/Đ/B/H, dữ liệu từ dự án mã nguồn mở lasotuvi, giấy phép MIT). Người dùng có thể chọn bảng Tử Vi Đẩu Số Toàn Thư trong "Tùy chọn nâng cao". Mỗi lá số liệt kê những sao hai bảng xếp khác nhau. Sửa bảng sách Việt trong `src/lib/engine/brightness.ts`.
+
+## 15. Những gì chưa có (gợi ý làm tiếp)
 
 - Chưa xuất hóa đơn điện tử tự động.
-- Chưa có chỉnh giờ sinh theo sự kiện đời (rectification) cho người không biết giờ.
-- Bảng độ sáng sao theo sách Toàn Thư; một số sách Việt xếp khác ở vài sao — có thể thêm tùy chọn trường phái.
 - Chưa có giới hạn tốc độ (rate limit) ở tầng hạ tầng; hiện chỉ chặn 10 lá số/email/giờ.
+- Công cụ tìm giờ sinh chưa lưu kết quả vào lá số đã lưu (người dùng bấm "Lập lá số" rồi lưu như bình thường).

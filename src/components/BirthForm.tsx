@@ -32,6 +32,7 @@ export default function BirthForm() {
   const [timeMode, setTimeMode] = useState<TimeMode>('chuan');
   const [dayChange, setDayChange] = useState<'23h' | '0h'>('23h');
   const [leapRule, setLeapRule] = useState<'tach-15' | 'theo-thang'>('tach-15');
+  const [brightness, setBrightness] = useState<'viet' | 'toan-thu'>('viet');
   const [email, setEmail] = useState('');
   const [cProcessing, setCProcessing] = useState(false);
   const [cMarketing, setCMarketing] = useState(false);
@@ -63,7 +64,7 @@ export default function BirthForm() {
     };
   }, [name, gender, calendar, day, month, year, leapMonth, timeType, hour, minute, branch, certainty, place, utcOffset, dst, longitude]);
 
-  const conventions: Conventions = { timeMode, dayChange, leapRule };
+  const conventions: Conventions = { timeMode, dayChange, leapRule, brightness };
 
   const preview = useMemo(() => {
     if (!input) return null;
@@ -256,7 +257,7 @@ export default function BirthForm() {
       {timeType === 'unknown' && (
         <p className="alert">
           Không có giờ sinh, cung Mệnh có thể nằm ở bất kỳ ô nào trong 12 ô. Lá số vẫn được lập (tạm theo giờ Tý) để bạn tìm hiểu, nhưng
-          phần luận giải chỉ mang tính minh họa.
+          phần luận giải chỉ mang tính minh họa. Bạn có thể thử <a href="/chinh-gio">tìm giờ sinh theo sự kiện đời</a> trước.
         </p>
       )}
 
@@ -327,6 +328,18 @@ export default function BirthForm() {
             <input type="radio" name="lr" checked={leapRule === 'theo-thang'} onChange={() => setLeapRule('theo-thang')} />
             <span>Tính trọn như tháng chính</span>
           </label>
+        </div>
+        <div className="field">
+          <span className="legend">Bảng độ sáng sao (Miếu, Vượng, Đắc, Hãm)</span>
+          <label className="check">
+            <input type="radio" name="bs" checked={brightness === 'viet'} onChange={() => setBrightness('viet')} />
+            <span>Theo sách Tử Vi Việt Nam (phổ biến ở Việt Nam)</span>
+          </label>
+          <label className="check">
+            <input type="radio" name="bs" checked={brightness === 'toan-thu'} onChange={() => setBrightness('toan-thu')} />
+            <span>Theo Tử Vi Đẩu Số Toàn Thư (sách gốc Trung Hoa, 7 mức)</span>
+          </label>
+          <span className="hint">Lá số sẽ liệt kê những sao có độ sáng khác nhau giữa hai bảng để bạn so sánh.</span>
         </div>
       </details>
 

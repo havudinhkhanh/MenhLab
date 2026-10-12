@@ -11,6 +11,7 @@ import { astro } from 'iztro';
 import { CAN, CHI, napAm, relation, isYang, yearCanChi, type Element, type ElementRelation } from './canchi';
 import { DEFAULT_CONVENTIONS, resolveBirth, type BirthInput, type Conventions, type ResolvedBirth } from './birth';
 import { jdFromDate, solarToLunar } from './lunar';
+import { vietBrightness, type BrightnessSchool } from './brightness';
 import {
   BAC_SI_VI,
   BRIGHTNESS_VI,
@@ -92,6 +93,9 @@ export interface Chart {
   hoa: Record<Hoa, string>;
   daiVanForward: boolean;
   calendarNote?: string;
+  brightnessSchool: BrightnessSchool;
+  /** Các sao trên lá số này có độ sáng khác nhau giữa hai trường phái. */
+  brightnessDiffs: { star: string; branchName: string; toanThu: string; viet: string }[];
 }
 
 const g = (s: string) => STAR_VI[s] ?? s;
@@ -146,6 +150,7 @@ function sexagenaryOfDay(d: number, m: number, y: number) {
 }
 
 export function buildChart(input: BirthInput, conv: Conventions = DEFAULT_CONVENTIONS): Chart {
+  conv = { ...DEFAULT_CONVENTIONS, ...conv };
   const birth = resolveBirth(input, conv);
   const { lunar, branch } = birth;
   const genderZh = input.gender === 'nam' ? '男' : '女';
@@ -208,6 +213,24 @@ export function buildChart(input: BirthInput, conv: Conventions = DEFAULT_CONVEN
     };
   }
 
+  // Độ sáng theo trường phái
+  const school: BrightnessSchool = conv.brightness ?? 'viet';
+  const brightnessDiffs: Chart['brightnessDiffs'] = [];
+  for (const pal of palaces) {
+    for (const s of [...pal.majors, ...pal.goodStars, ...pal.badStars, ...pal.others]) {
+      const v = vietBrightness(s.name, pal.branch);
+      if (v === undefined) continue; // sao không có trong bảng sách Việt
+      const tt = s.brightness;
+      const ttName = tt?.name ?? '—';
+      const vName = v?.name ?? '—';
+      const comparable = (n: string) => (n === 'Lợi' ? 'Đắc' : n === 'Bất đắc' ? 'Bình' : n);
+      if (comparable(ttName) !== vName) {
+        brightnessDiffs.push({ star: s.name, branchName: pal.branchName, toanThu: ttName, viet: vName });
+      }
+      if (school === 'viet') s.brightness = v ?? undefined;
+    }
+  }
+
   // Tứ Hóa năm sinh: lấy từ bảng và đối chiếu iztro
   const hoaNames = TU_HOA[yearCan];
   const hoa = Object.fromEntries(HOA_ORDER.map((h, i) => [h, hoaNames[i]])) as Record<Hoa, string>;
@@ -252,6 +275,8 @@ export function buildChart(input: BirthInput, conv: Conventions = DEFAULT_CONVEN
     hoa,
     daiVanForward: forward,
     calendarNote,
+    brightnessSchool: school,
+    brightnessDiffs,
   };
 }
 

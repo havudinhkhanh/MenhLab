@@ -5,6 +5,7 @@
 import { CANH_GIO, hourToBranch } from './canchi';
 import { addDays, jdFromDate, lunarToSolar, solarToLunar, type LunarDate } from './lunar';
 import { historicalOffset, placeByCode } from './places';
+import type { BrightnessSchool } from './brightness';
 
 export type TimeMode = 'chuan' | 'dong-ho' | 'mat-troi';
 export type DayChange = '23h' | '0h';
@@ -38,9 +39,11 @@ export interface Conventions {
   timeMode: TimeMode;
   dayChange: DayChange;
   leapRule: LeapRule;
+  /** Bảng độ sáng sao: 'viet' (sách Việt, mặc định) hoặc 'toan-thu' (Tử Vi Đẩu Số Toàn Thư). */
+  brightness?: BrightnessSchool;
 }
 
-export const DEFAULT_CONVENTIONS: Conventions = { timeMode: 'chuan', dayChange: '23h', leapRule: 'tach-15' };
+export const DEFAULT_CONVENTIONS: Conventions = { timeMode: 'chuan', dayChange: '23h', leapRule: 'tach-15', brightness: 'viet' };
 
 export interface ResolvedBirth {
   solar: { day: number; month: number; year: number };
@@ -265,5 +268,6 @@ export function parseConventions(raw: unknown): Conventions {
     timeMode: r.timeMode === 'dong-ho' || r.timeMode === 'mat-troi' ? r.timeMode : 'chuan',
     dayChange: r.dayChange === '0h' ? '0h' : '23h',
     leapRule: r.leapRule === 'theo-thang' ? 'theo-thang' : 'tach-15',
+    brightness: r.brightness === 'toan-thu' ? 'toan-thu' : 'viet',
   };
 }

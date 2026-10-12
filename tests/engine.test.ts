@@ -149,3 +149,27 @@ test('Đối chiếu với iztro trên nhiều lá số: Tứ Hóa và tên gọ
   assert.equal(HOA_ORDER.length, 4);
   assert.equal(Object.keys(TU_HOA).length, 10);
 });
+
+test('Độ sáng theo hai trường phái', async () => {
+  const { vietBrightness } = await import('../src/lib/engine/brightness');
+  // Đối chiếu bảng sách Việt (Tý = 0)
+  assert.equal(vietBrightness('Tử Vi', 2)?.name, 'Miếu'); // Dần
+  assert.equal(vietBrightness('Tử Vi', 0)?.name, 'Bình'); // Tý
+  assert.equal(vietBrightness('Thái Dương', 0)?.name, 'Hãm');
+  assert.equal(vietBrightness('Tham Lang', 0)?.name, 'Hãm');
+  assert.equal(vietBrightness('Thiên Phủ', 0), undefined); // không có trong bảng Việt
+  assert.equal(vietBrightness('Thiên Mã', 0), null); // có trong bảng nhưng không ghi ở Tý
+
+  const viet = buildChart(base);
+  const tt = buildChart(base, { timeMode: 'chuan', dayChange: '23h', leapRule: 'tach-15', brightness: 'toan-thu' });
+  assert.equal(viet.brightnessSchool, 'viet');
+  assert.equal(tt.brightnessSchool, 'toan-thu');
+  // Cùng cấu trúc, chỉ khác độ sáng
+  assert.equal(viet.menhBranch, tt.menhBranch);
+  assert.deepEqual(viet.brightnessDiffs, tt.brightnessDiffs);
+  for (const d of viet.brightnessDiffs) {
+    const p = viet.palaces.find((x) => x.branchName === d.branchName)!;
+    const s = [...p.majors, ...p.goodStars, ...p.badStars, ...p.others].find((x) => x.name === d.star)!;
+    assert.equal(s.brightness?.name ?? '—', d.viet);
+  }
+});

@@ -49,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <nav className="nav" aria-label="Chính">
               <Link href="/tu-dien">Từ điển</Link>
+              <Link href="/chinh-gio">Tìm giờ sinh</Link>
               <Link href="/phuong-phap">Phương pháp</Link>
               <Link href="/bang-gia">Bảng giá</Link>
               <Link href="/tim-la-so">Lá số của tôi</Link>

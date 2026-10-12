@@ -64,7 +64,15 @@ export default function Method() {
           Phần an sao lõi (cung Mệnh, Thân, Cục, 14 chính tinh, phụ tinh, độ sáng, Tứ Hóa, vòng Tràng Sinh, vòng Bác Sĩ, đại vận) dùng thư viện
           mã nguồn mở iztro (giấy phép MIT), đã được cộng đồng kiểm chứng; chúng tôi kiểm thử đối chiếu với tính tay. Phần đặc thù Tử Vi Việt
           Nam do {config.brand} tự tính: âm lịch UTC+7, <T>Tuần</T> và <T>Triệt</T> vẽ giữa hai cung, vòng Thái Tuế, tiểu hạn, tên gọi thuật ngữ
-          Việt. Bảng độ sáng theo sách Tử Vi Đẩu Số Toàn Thư; một số sách Việt Nam xếp độ sáng của vài sao khác đôi chút.
+          Việt.
+        </p>
+        <h3>Độ sáng sao: hai trường phái</h3>
+        <p>
+          Sách Tử Vi Việt Nam dùng thang 5 mức (Miếu, Vượng, Đắc, Bình, Hãm) và xếp một số sao khác với Tử Vi Đẩu Số Toàn Thư (thang 7
+          mức, có thêm Lợi và Bất đắc). Khoảng hai phần ba vị trí của 14 chính tinh được hai bảng xếp khác nhau; phần lớn chỉ lệch một bậc, nhưng có chỗ ngược hẳn: Tham Lang ở Tý, sách Việt ghi Hãm còn Toàn Thư ghi Vượng; Thất Sát ở Tuất, sách Việt ghi Hãm còn Toàn Thư ghi Miếu. Mặc định {config.brand} dùng bảng
+          sách Việt (theo dữ liệu của dự án mã nguồn mở lasotuvi, giấy phép MIT); bạn có thể chọn Toàn Thư trong tùy chọn nâng cao. Thiên
+          Phủ, Lộc Tồn, Tả Phù, Hữu Bật, Thiên Khôi, Thiên Việt không có trong bảng sách Việt nên giữ theo Toàn Thư. Mỗi lá số đều liệt kê
+          những sao mà hai bảng xếp khác nhau — vì đây là điểm các sách chưa thống nhất, bạn nên biết chỗ nào đang tranh luận.
         </p>
         <p>
           Quy ước mặc định: năm âm lịch đổi vào Tết; tuổi mụ; giờ Tý (23:00–01:00) tính sang ngày mới; tháng nhuận tách ở ngày 15; Tứ Hóa năm
