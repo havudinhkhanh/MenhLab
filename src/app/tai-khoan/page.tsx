@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionEmail } from '@/lib/auth';
 import { db, type ChartRow } from '@/lib/db';
+import { withTestPro } from '@/lib/testAccount';
 import { buildChart } from '@/lib/engine/chart';
 import { buildReading } from '@/lib/reading';
 import { config, vnd } from '@/lib/config';
@@ -46,7 +47,7 @@ export default async function AccountPage() {
   const email = await getSessionEmail();
   if (!email) redirect('/dang-nhap?next=/tai-khoan');
   const { data } = await db().from('charts').select('*').eq('email', email).order('created_at', { ascending: false }).limit(100);
-  const rows = (data ?? []) as ChartRow[];
+  const rows = ((data ?? []) as ChartRow[]).map(withTestPro);
   const now = new Date();
 
   return (

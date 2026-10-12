@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash } from 'node:crypto';
 import type { BirthInput, Conventions } from './engine/birth';
 import { devDb, devDbEnabled } from './devdb';
+import { withTestPro } from './testAccount';
 
 let client: SupabaseClient | null = null;
 
@@ -43,7 +44,7 @@ export async function getChartRow(id: string): Promise<ChartRow | null> {
   if (!isUuid(id) || !dbEnabled()) return null;
   const { data, error } = await db().from('charts').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
-  return data as ChartRow | null;
+  return data ? withTestPro(data as ChartRow) : null;
 }
 
 export const hashEmail = (email: string) =>

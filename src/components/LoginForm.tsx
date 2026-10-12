@@ -11,13 +11,14 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 }
 
 export default function LoginForm({ next, initialError }: { next: string; initialError?: string }) {
-  const [step, setStep] = useState<'email' | 'code'>('email');
+  const [step, setStep] = useState<'email' | 'code' | 'password'>('email');
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(initialError ?? '');
   const [devCode, setDevCode] = useState('');
+  const [password, setPassword] = useState('');
   const [sentAt, setSentAt] = useState(0);
 
   async function send(e?: React.FormEvent) {
@@ -25,7 +26,11 @@ export default function LoginForm({ next, initialError }: { next: string; initia
     setError('');
     setBusy(true);
     try {
-      const r = await post<{ devCode?: string }>('/api/auth/request', { email, consent, next });
+      const r = await post<{ devCode?: string; password?: boolean }>('/api/auth/request', { email, consent, next });
+      if (r.password) {
+        setStep('password');
+        return;
+      }
       setDevCode(r.devCode ?? '');
       setStep('code');
       setSentAt(Date.now());
@@ -48,6 +53,47 @@ export default function LoginForm({ next, initialError }: { next: string; initia
       setError(err instanceof Error ? err.message : 'Lỗi');
       setBusy(false);
     }
+  }
+
+  async function signIn(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      const r = await post<{ next: string }>('/api/auth/password', { email, password, next });
+      window.location.href = r.next;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Lỗi');
+      setBusy(false);
+    }
+  }
+
+  if (step === 'password') {
+    return (
+      <form onSubmit={signIn} className="login-card" noValidate>
+        <h2>Nhập mật khẩu</h2>
+        <p className="muted">
+          Đăng nhập bằng <b>{email}</b>.
+        </p>
+        <div className="field">
+          <label htmlFor="password">Mật khẩu</label>
+          <input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+        </div>
+        {error && (
+          <p className="alert" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="btn" type="submit" disabled={busy || !password} style={{ width: '100%' }}>
+          {busy ? 'Đang kiểm tra…' : 'Đăng nhập'}
+        </button>
+        <p className="small" style={{ marginTop: 14 }}>
+          <button type="button" className="linklike" onClick={() => setStep('email')}>
+            Đổi email
+          </button>
+        </p>
+      </form>
+    );
   }
 
   if (step === 'code') {

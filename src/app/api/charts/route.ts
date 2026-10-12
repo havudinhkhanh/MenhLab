@@ -4,6 +4,7 @@ import { buildChart } from '@/lib/engine/chart';
 import { db, dbEnabled, hashEmail, hashIp, isEmail } from '@/lib/db';
 import { CONSENT_TEXT, CONSENT_VERSION } from '@/lib/config';
 import { chartReadyEmail, sendEmail } from '@/lib/email';
+import { isTestEmail } from '@/lib/testAccount';
 
 export async function POST(req: Request) {
   if (!dbEnabled()) return NextResponse.json({ error: 'Máy chủ chưa cấu hình cơ sở dữ liệu.' }, { status: 503 });
@@ -35,7 +36,8 @@ export async function POST(req: Request) {
   // Chống spam đơn giản: tối đa 10 lá số / email / giờ
   const since = new Date(Date.now() - 3600_000).toISOString();
   const { count } = await sb.from('charts').select('id', { count: 'exact', head: true }).eq('email', email).gte('created_at', since);
-  if ((count ?? 0) >= 10) return NextResponse.json({ error: 'Bạn đã lập quá nhiều lá số trong một giờ. Vui lòng thử lại sau.' }, { status: 429 });
+  const test = isTestEmail(email);
+  if (!test && (count ?? 0) >= 10) return NextResponse.json({ error: 'Bạn đã lập quá nhiều lá số trong một giờ. Vui lòng thử lại sau.' }, { status: 429 });
 
   const now = new Date().toISOString();
   const marketing = consent.marketing === true;
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
       consent_marketing_at: marketing ? now : null,
       consent_research: research,
       consent_version: CONSENT_VERSION,
+      ...(test ? { is_pro: true, pro_at: now } : {}),
     })
     .select('id')
     .single();
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
   );
 
   const mail = chartReadyEmail(data.id, input.name ?? null);
-  await sendEmail({ to: email, ...mail, chartId: data.id, kind: 'chart_ready' }).catch(() => false);
+  if (!test) await sendEmail({ to: email, ...mail, chartId: data.id, kind: 'chart_ready' }).catch(() => false);
 
   return NextResponse.json({ id: data.id });
 }
