@@ -8,7 +8,7 @@ import type { Sensitivity } from '@/lib/engine/sensitivity';
 import type { BirthInput, Conventions } from '@/lib/engine/birth';
 import { config, vnd } from '@/lib/config';
 import ChartExplorer, { type PalaceView } from './ChartExplorer';
-import { AiPanel, CheckoutButton, DeleteData, PrintButton, SaveChart } from './Actions';
+import { CheckoutButton, DeleteData, PrintButton, SaveChart } from './Actions';
 import Rating from './Rating';
 import { DaiVanNotes, PalaceBody, YearBody } from './ReadingBlocks';
 import { T } from './TermLayer';
@@ -27,7 +27,6 @@ export interface ReportProps {
   chartId?: string;
   isNew?: boolean;
   canRate?: boolean;
-  ai?: { enabled: boolean; synthesis: string | null; qa: { q: string; a: string }[]; limit: number };
   draft?: { input: BirthInput; conventions: Conventions };
   paymentReturn?: 'ok' | 'cancel';
   patterns: PatternHit[];
@@ -134,7 +133,7 @@ function ReportBody(p: ReportProps) {
   const y0 = reading.years[0];
   const curMonth = y0?.months.find((m) => m.current);
   const curDv = reading.daiVan.find((d) => d.current);
-  const sections = SECTIONS.filter((s) => s.id !== 'ai');
+  const sections = SECTIONS;
 
   const quick: { label: string; text: string; href: string; locked?: boolean }[] = [
     { label: 'Bạn là người', text: byName('Mệnh').story.lead, href: '#tinh-cach' },
@@ -187,11 +186,6 @@ function ReportBody(p: ReportProps) {
                 <a href={`#${s.id}`}>{s.label}</a>
               </li>
             ))}
-            {isPro && p.ai?.enabled && chartId && (
-              <li>
-                <a href="#ai">Hỏi đáp</a>
-              </li>
-            )}
             {!isPro && (
               <li>
                 <a href="#mo-khoa" className="toc-pro">
@@ -204,10 +198,10 @@ function ReportBody(p: ReportProps) {
 
         <div className="report-main">
           <section id="doc-nhanh" className="section">
-            {isPro && chartId && p.ai?.enabled && (
+            {isPro && chartId && (
               <a className="book-cta no-print" href={`/la-so/${chartId}/luan-giai`}>
                 <b>Bản luận giải trọn đời →</b>
-                <span>Khoảng 15.000 chữ viết riêng cho lá số này, đọc như một cuốn sách: 12 khía cạnh, bức tranh liên cung, các giai đoạn đời, từng tháng năm nay, tổng kết và lời nhắn. In hoặc lưu PDF được.</span>
+                <span>Khoảng 14.000 chữ viết riêng cho lá số này, đọc như một cuốn sách: 12 khía cạnh, bức tranh liên cung, các giai đoạn đời, từng tháng năm nay, tổng kết và lời nhắn. In hoặc lưu PDF được.</span>
               </a>
             )}
             <h2>Đọc nhanh trong một phút</h2>
@@ -535,7 +529,7 @@ function ReportBody(p: ReportProps) {
                 <li>Diễn giải đầy đủ 11 cung còn lại bằng lời thường: công việc, tiền bạc, tình cảm, gia đình, sức khỏe — mỗi cung kèm việc nên làm và căn cứ</li>
                 <li>Từng chặng 10 năm: cơ hội đến từ đâu, chuyện gì cần chuẩn bị</li>
                 <li>Năm nay và năm sau: tiền đến từ đâu, dễ hao ở đâu, sức khỏe, tình cảm — và từng tháng nên làm gì</li>
-                {p.ai?.enabled && <li>Bản luận giải trọn đời viết riêng cho bạn (khoảng 15.000 chữ, in/lưu PDF được) và {p.ai.limit} câu hỏi đáp về lá số</li>}
+                <li>Bản luận giải trọn đời viết riêng cho bạn, đọc như một cuốn sách (in hoặc lưu PDF được)</li>
                 <li>Bản in / PDF</li>
               </ul>
               {chartId ? (
@@ -548,16 +542,7 @@ function ReportBody(p: ReportProps) {
         </section>
       )}
 
-      {isPro && p.ai?.enabled && chartId && (
-        <section id="ai" className="section">
-          <h2>Luận giải tổng hợp và hỏi đáp</h2>
-          <p className="muted small">
-            Viết bởi AI chỉ từ dữ kiện lá số và các nhận định có căn cứ ở trên. AI có thể diễn đạt chưa chuẩn — hãy đối chiếu với phần "Vì
-            sao?".
-          </p>
-          <AiPanel chartId={chartId} initialSynthesis={p.ai.synthesis} initialQa={p.ai.qa} limit={p.ai.limit} />
-        </section>
-      )}
+
 
       <section className="section no-print" style={{ marginTop: 48, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {isPro && <PrintButton />}

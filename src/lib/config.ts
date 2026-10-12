@@ -18,7 +18,6 @@ export const config = {
     account: process.env.BANK_ACCOUNT || '',
     holder: process.env.BANK_HOLDER || '',
   },
-  aiQuestionsLimit: Number(process.env.AI_QUESTIONS_LIMIT || 10),
 };
 
 /** Phiên bản văn bản đồng ý. Đổi nội dung đồng ý thì tăng phiên bản. */

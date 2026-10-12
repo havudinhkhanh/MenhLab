@@ -32,8 +32,6 @@ export interface ChartRow {
   unsubscribed_at: string | null;
   drip_step: number;
   last_drip_at: string | null;
-  ai_synthesis: string | null;
-  ai_questions: { q: string; a: string; at: string }[];
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -3,8 +3,6 @@ import type { Metadata } from 'next';
 import ChartReport from '@/components/ChartReport';
 import { getChartRow } from '@/lib/db';
 import { computeReport } from '@/lib/report';
-import { aiEnabled } from '@/lib/ai';
-import { config } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,12 +41,6 @@ export default async function SavedChartPage({
       isNew={sp.moi === '1'}
       canRate={row.consent_research}
       paymentReturn={sp.tt === 'ok' ? 'ok' : sp.tt === 'huy' ? 'cancel' : undefined}
-      ai={{
-        enabled: aiEnabled(),
-        synthesis: row.ai_synthesis,
-        qa: (row.ai_questions ?? []).map(({ q, a }) => ({ q, a })),
-        limit: config.aiQuestionsLimit,
-      }}
     />
   );
 }

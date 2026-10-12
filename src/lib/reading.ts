@@ -55,7 +55,7 @@ export interface PalaceReading {
   strengths: string[];
   cautions: string[];
   advice: string[];
-  /** Bản gộp văn bản (dùng cho email, AI). */
+  /** Bản gộp văn bản (dùng cho email). */
   paragraphs: string[];
   evidence: string[];
   support: number;
@@ -100,7 +100,7 @@ export interface YearReading {
   health: string[];
   actions: string[];
   evidence: string[];
-  /** Bản gộp văn bản (dùng cho email, AI). */
+  /** Bản gộp văn bản (dùng cho email). */
   paragraphs: string[];
   /** Diễn giải bằng văn xuôi: vì sao năm nay như vậy. */
   story: string[];

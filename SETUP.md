@@ -13,7 +13,6 @@ Tài liệu này dẫn bạn từ repo GitHub đến một trang web chạy th�
 | Cơ sở dữ liệu | Lưu lá số, đơn hàng, bằng chứng đồng ý | Supabase | Miễn phí |
 | Email | Gửi link lá số, biên nhận, email teaser | Resend | Miễn phí (giới hạn số email/ngày) |
 | Thanh toán | Thu tiền gói Pro qua VietQR | payOS, hoặc chuyển khoản thủ công | Miễn phí |
-| AI (tùy chọn) | Luận giải tổng hợp, hỏi đáp cho gói Pro | Claude API (Anthropic) | Trả theo lượt dùng |
 
 **Lưu ý quan trọng về Vercel:** gói Hobby (miễn phí) chỉ dành cho mục đích cá nhân, phi thương mại. Khi bắt đầu thu tiền, hãy nâng lên gói Pro của Vercel (hoặc chuyển sang nền tảng khác cho phép thương mại). Kiểm tra điều khoản hiện hành trên vercel.com trước khi bán.
 
@@ -127,22 +126,15 @@ Khi có cả payOS và thông tin ngân hàng, hệ thống ưu tiên payOS.
 
 ---
 
-## 6. AI cho gói Pro (tùy chọn)
+## 6. Bản luận giải trọn đời (Pro)
 
-1. Vào **console.anthropic.com** → tạo API key, nạp credit.
-2. Thêm `ANTHROPIC_API_KEY` vào Vercel. Có thể đặt `ANTHROPIC_MODEL` (mặc định `claude-sonnet-5-5`) và `AI_QUESTIONS_LIMIT` (mặc định 10 câu/lá số).
-3. Chạy lại `supabase/schema.sql` trong Supabase (SQL Editor → Run) để có bảng `report_sections` — nơi lưu "Bản luận giải trọn đời". Chạy lại nhiều lần không sao.
-4. Redeploy. Lá số Pro sẽ có:
-   - **Bản luận giải trọn đời** (`/la-so/<id>/luan-giai`): 19 phần, khoảng 15.000 chữ, viết riêng theo tên khách (anh/chị + tên). Lần mở đầu tiên, trình duyệt cho AI viết lần lượt từng phần (4 phần cùng lúc, khoảng 2–4 phút); phần nào xong hiện ngay và được lưu lại — lần sau mở là có sẵn, không tốn thêm.
-   - Hỏi đáp về lá số.
+Không cần cài thêm gì. Lá số Pro có nút **Bản luận giải trọn đời** (`/la-so/<id>/luan-giai`): 19 phần, khoảng 13.000–15.000 chữ, gọi khách theo "anh/chị + tên" nếu khách điền tên, in hoặc lưu PDF được. Bố cục:
 
-**Vì sao bản AI không "bịa":** mỗi phần chỉ nhận đúng dữ kiện máy an sao đã tính, kèm nghĩa từng sao theo từ điển MệnhLab. Văn bản trả về được kiểm tra tự động trước khi lưu: viết "sao X ở cung Y" mà sai vị trí, ghi sai độ sáng, dùng từ hù dọa ("chắc chắn sẽ", "tai nạn", "phá sản"...), dùng thuật ngữ tiếng Anh, hoặc quá ngắn → AI phải viết lại kèm lời nhắc lỗi. Lời nhắc nằm ở `src/lib/aiReport.ts` (`REPORT_SYSTEM` và hàm `brief`) — muốn đổi giọng văn, độ dài, cấu trúc từng phần thì sửa ở đó.
+- Phần 1: chân dung và nền tảng lá số.
+- Phần 2: 12 khía cạnh cuộc đời — mỗi cung 5 đoạn: ấn tượng ngoài đời → sao chính và độ sáng → các sao đi kèm (có điểm số và so với 24.000 lá số) → liên hệ với các cung khác → nguyên tắc nên giữ, dấu hiệu lệch hướng, ngưỡng hành động; cuối mỗi cung có câu hỏi tự kiểm chứng.
+- Phần 3–7: bốn trục liên cung, các giai đoạn đời, năm nay và từng tháng, tổng kết (đòn bẩy, điểm mù, thứ tự hành động), điều đặc biệt và lời nhắn.
 
-**Thời gian chạy:** route `/api/report` đặt `maxDuration = 300` giây. Gói Vercel Hobby có Fluid Compute cho phép tới 300 giây; nếu tài khoản của bạn giới hạn 60 giây, giảm `maxTokens` của các phần dài trong `AI_SECTIONS`.
-
-**Thử giao diện khi chưa có API key:** đặt `AI_MOCK=1` — hệ thống ghép tạm các nhận định theo quy tắc thay cho AI (chỉ để xem bố cục, không phải chất lượng thật). Nhớ xóa biến này trước khi public.
-
-Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy tắc — AI là phần thêm.
+Toàn bộ được dựng từ quy tắc Tử Vi và nội dung biên soạn sẵn — tính ngay khi mở trang, không lưu, không tốn chi phí. Muốn sửa câu chữ: `src/content/book.ts` (ấn tượng ngoài đời theo sao, nghĩa sao phụ theo lĩnh vực, nguyên tắc, ngưỡng hành động, câu hỏi tự kiểm chứng), `src/content/story.ts` (bản chất từng sao), `src/content/report.ts` (dấu hiệu lệch hướng). Cách ghép câu nằm ở `src/lib/book.ts`.
 
 ---
 
@@ -151,13 +143,13 @@ Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy t
 **Cách 1 — nhanh nhất, chỉ cần Vercel:** chỉ cần đặt 2 biến `ADMIN_KEY` và `APP_SECRET` (bước 1) là đủ, chưa cần Supabase hay Resend.
 1. Vào `https://<trang của bạn>/admin`, nhập `ADMIN_KEY` → Đăng nhập.
 2. Bấm **Mở bản xem thử** (trang `/admin/thu-pro`).
-3. Nhập ngày giờ sinh bất kỳ (nên điền cả tên để thấy cách xưng hô) → **Xem bản Pro**. Bạn thấy đúng nội dung khách nhận được sau khi mua. Nếu đã đặt `ANTHROPIC_API_KEY`, kéo xuống cuối có nút **Viết bản luận giải trọn đời** (viết thử đủ 19 phần, không lưu) và ô hỏi đáp.
+3. Nhập ngày giờ sinh bất kỳ (nên điền cả tên để thấy cách xưng hô) → **Xem bản Pro**. Bạn thấy đúng nội dung khách nhận được sau khi mua. Bấm **Xem bản luận giải trọn đời** ở thanh trên cùng để đọc đúng cuốn khách nhận được.
 4. Không lưu gì, không gửi email, không tạo đơn hàng. Bấm **Thử lá số khác** để đổi người.
 
 **Cách 2 — thử trọn luồng thật (cần Supabase):**
 1. Lập lá số ở trang chủ, nhập email của bạn, đánh dấu ô đồng ý → lá số được lưu.
 2. Vào `/admin` → ô **Tặng Pro cho lá số đã lưu** → dán link lá số → **Mở Pro miễn phí**. Hệ thống ghi một đơn 0₫ (cách "gift") để đối soát.
-3. Mở lại link lá số: thấy nhãn Pro, AI hỏi đáp (nếu bật), lưu lại kết quả AI giữa các lần mở.
+3. Mở lại link lá số: thấy nhãn Pro và nút Bản luận giải trọn đời.
 
 Cũng dùng ô này để tặng Pro cho người quen thử nghiệm và góp ý.
 

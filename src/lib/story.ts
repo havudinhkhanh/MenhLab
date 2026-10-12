@@ -65,6 +65,10 @@ export const DOMAIN_TOPIC: Record<DomainKey, string> = {
   phumau: 'quan hệ với cha mẹ, cấp trên',
 };
 
+export function starInDomainPlain(star: string, domain: DomainKey): string {
+  return domainSentence(star, domain);
+}
+
 function domainSentence(star: string, domain: DomainKey): string {
   return MAJOR[star]?.domains[domain] ?? STAR_DOMAIN_EXTRA[star]?.[domain] ?? '';
 }
@@ -92,7 +96,7 @@ function hoaOn(chart: Chart, s: Star): Hoa | undefined {
 /** Ở các cung "người khác", sao trên cung phác họa người ở phía bên kia hoặc không khí mối quan hệ. */
 const OTHER_PEOPLE: Partial<Record<DomainKey, string>> = {
   huynh: 'anh chị em, người cộng sự của bạn',
-  tutuc: 'con cái (hoặc học trò, những người bạn dìu dắt)',
+  tutuc: 'con cái (hoặc học trò, những người được bạn dìu dắt)',
   no: 'bạn bè, đồng nghiệp, khách hàng quanh bạn',
   phumau: 'cha mẹ, cấp trên của bạn',
 };

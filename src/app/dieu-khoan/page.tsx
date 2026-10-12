@@ -22,10 +22,10 @@ export default function Terms() {
         <p>
           Nếu bạn xóa dữ liệu lá số, bản Pro của lá số đó cũng bị xóa theo và không khôi phục được.
         </p>
-        <h2>Nội dung do AI viết</h2>
+        <h2>Bản luận giải</h2>
         <p>
-          Phần luận giải tổng hợp và hỏi đáp (nếu có) do mô hình AI viết dựa trên dữ kiện lá số. AI có thể diễn đạt chưa chính xác; phần "Vì
-          sao?" của từng cung là căn cứ gốc.
+          Mọi nhận định được dựng từ quy tắc Tử Vi và nội dung biên soạn sẵn, áp vào dữ kiện lá số của bạn. Phần "Vì sao lá số nói vậy?" của từng
+          cung là căn cứ gốc để bạn tự kiểm tra.
         </p>
         <h2>Sử dụng hợp lý</h2>
         <p>Không dùng dịch vụ để lập lá số của người khác khi chưa có sự đồng ý của họ, hoặc để gây áp lực, phân biệt đối xử với người khác.</p>

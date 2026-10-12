@@ -17,7 +17,7 @@ export const STAR_DOMAIN_EXTRA: Record<string, Partial<Record<DomainKey, string>
   },
   'Thiên Cơ': {
     huynh: 'Anh chị em hoặc bạn ngang hàng nhanh nhạy, hay góp ý; quan hệ thay đổi theo giai đoạn, lúc gần lúc xa.',
-    tutuc: 'Con cái hoặc người bạn dạy dỗ thường thông minh, hiếu động; hợp cách dạy bằng giải thích "vì sao".',
+    tutuc: 'Con cái hoặc người được bạn dạy dỗ thường thông minh, hiếu động; hợp cách dạy bằng giải thích "vì sao".',
     tat: 'Dễ căng thẳng vì nghĩ nhiều, khó ngủ khi có chuyện chưa giải quyết.',
     no: 'Đồng nghiệp, bạn bè thay đổi khá nhiều qua các giai đoạn; bạn là người hay được hỏi ý kiến.',
     dien: 'Hay đổi chỗ ở, sửa sang, sắp xếp lại nhà; tài sản tích lũy theo kế hoạch hơn là may mắn.',
@@ -144,7 +144,7 @@ export const STAR_DOMAIN_EXTRA: Record<string, Partial<Record<DomainKey, string>
 
 /** Lời khuyên hành động theo chính tinh (dùng cho mục "Nên làm"). */
 export const STAR_ADVICE: Record<string, string> = {
-  'Tử Vi': 'Tìm người giỏi hỗ trợ thay vì ôm hết việc; chủ động xin góp ý thẳng thắn từ người bạn tin.',
+  'Tử Vi': 'Tìm người giỏi hỗ trợ thay vì ôm hết việc; chủ động xin góp ý thẳng thắn từ người mà bạn tin.',
   'Thiên Cơ': 'Chọn một hướng và giữ ít nhất 6–12 tháng rồi mới đánh giá lại; viết kế hoạch ra giấy để bớt nghĩ vòng vòng.',
   'Thái Dương': 'Cho đi có giới hạn: đặt ranh giới thời gian và sức lực; ghi lại thành tích để người khác thấy công sức của bạn.',
   'Vũ Khúc': 'Mềm mỏng hơn trong cách nói; dành thời gian cho các mối quan hệ, không chỉ cho kết quả công việc.',

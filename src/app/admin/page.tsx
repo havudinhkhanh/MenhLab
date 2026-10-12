@@ -71,7 +71,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
       <div className="plans" style={{ marginBottom: 32 }}>
         <div className="panel">
           <h2 style={{ marginTop: 0 }}>Xem thử bản Pro</h2>
-          <p>Nhập ngày giờ sinh bất kỳ, xem đúng nội dung khách nhận được sau khi mua — kể cả thử AI. Không lưu gì, không cần cơ sở dữ liệu.</p>
+          <p>Nhập ngày giờ sinh bất kỳ, xem đúng nội dung khách nhận được sau khi mua. Không lưu gì, không cần cơ sở dữ liệu.</p>
           <a className="btn" href="/admin/thu-pro">
             Mở bản xem thử
           </a>
@@ -79,7 +79,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
         <form method="post" action="/api/admin" className="panel">
           <h2 style={{ marginTop: 0 }}>Tặng Pro cho lá số đã lưu</h2>
           <p className="small">
-            Dùng để thử trọn luồng thật (lưu, email, AI hỏi đáp, bản in) hoặc tặng người quen. Ghi nhận như một đơn 0₫ để đối soát.
+            Dùng để thử trọn luồng thật (lưu, email, bản luận giải trọn đời, bản in) hoặc tặng người quen. Ghi nhận như một đơn 0₫ để đối soát.
           </p>
           <input type="hidden" name="action" value="grant" />
           <div className="field">

@@ -7,6 +7,7 @@ import { detectPatterns } from './engine/patterns';
 import { derive } from './engine/derivation';
 import { comboKey } from '@/content/blind';
 import { buildLifeReport, lifeToFree } from './lifeReport';
+import { buildBook } from './book';
 
 export function computeReport(input: BirthInput, conv: Conventions, isPro: boolean, now = new Date()) {
   const chart = buildChart(input, conv);
@@ -24,6 +25,7 @@ export function computeReport(input: BirthInput, conv: Conventions, isPro: boole
     fullReading: full,
     life: isPro ? life : lifeToFree(life),
     fullLife: life,
+    book: isPro ? buildBook(chart, full, life, menhKey) : undefined,
     sensitivity,
     patterns,
     derivation: derive(chart),

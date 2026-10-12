@@ -5,7 +5,6 @@ import { config, vnd } from '@/lib/config';
 export const metadata: Metadata = { title: 'Bảng giá' };
 
 export default function Pricing() {
-  const ai = !!process.env.ANTHROPIC_API_KEY;
   return (
     <div className="wrap" style={{ paddingTop: 32 }}>
       <h1>Bảng giá</h1>
@@ -37,7 +36,7 @@ export default function Pricing() {
             <li>Diễn giải đầy đủ 11 cung còn lại bằng lời thường: công việc, tiền bạc, tình cảm, gia đình, sức khỏe — mỗi cung kèm việc nên làm và căn cứ</li>
             <li>Từng chặng 10 năm: cơ hội đến từ đâu, chuyện gì cần chuẩn bị</li>
             <li>Năm nay và năm sau: tiền đến từ đâu, dễ hao ở đâu, sức khỏe, tình cảm — và từng tháng nên làm gì</li>
-            {ai && <li>Bản luận giải tổng hợp và {config.aiQuestionsLimit} câu hỏi đáp về lá số (AI, có dẫn căn cứ)</li>}
+            <li>Bản luận giải trọn đời viết riêng, đọc như một cuốn sách (in hoặc lưu PDF được)</li>
             <li>Bản in, lưu PDF</li>
           </ul>
           <p className="small muted">

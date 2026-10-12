@@ -377,7 +377,7 @@ export const DOMAIN_DO: Partial<Record<import('./palaces').DomainKey, string>> =
   di: 'Khi vào môi trường mới, chủ động giới thiệu mình và tìm một người "dẫn đường"; chuẩn bị kỹ trước những chuyến đi xa.',
   dien: 'Lập danh sách tài sản và giấy tờ nhà đất; bảo trì nhà định kỳ thay vì đợi hỏng mới sửa.',
   phuthe: 'Hẹn một buổi trò chuyện thật mỗi tuần, nói về mong muốn của cả hai chứ không chỉ chuyện việc nhà.',
-  tutuc: 'Hỏi nhiều hơn dặn; để con (hoặc người bạn dìu dắt) tự quyết những việc nhỏ và tự chịu kết quả.',
+  tutuc: 'Hỏi nhiều hơn dặn; để con (hoặc người được bạn dìu dắt) tự quyết những việc nhỏ và tự chịu kết quả.',
   phumau: 'Hỏi thăm cha mẹ đều đặn; với cấp trên, báo cáo chủ động và rõ ràng bằng văn bản.',
   huynh: 'Giữ liên lạc đều với anh chị em; chuyện tiền bạc chung luôn ghi rõ ràng, kể cả với người thân.',
   no: 'Đầu tư vào vài mối quan hệ chất lượng; tìm hiểu kỹ người hợp tác trước khi giao tiền hay việc lớn.',

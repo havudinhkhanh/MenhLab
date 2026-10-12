@@ -17,7 +17,7 @@ Trang lá số Tử Vi theo hướng nâng cao hiểu biết: giải thích mọ
 - **Học trên chính lá số của bạn:** từng bước an sao tính trên dữ liệu người dùng, tự đối chiếu với engine; loạt 9 bài Học đọc lá số có câu hỏi kiểm tra.
 - **168 trang kiến thức sao × cung** có căn cứ, tỷ lệ nền, sao đồng cung, bảng độ sáng hai trường phái.
 - **Hai trường phái độ sáng sao:** bảng sách Việt (mặc định) hoặc Toàn Thư; mỗi lá số liệt kê các sao hai bảng xếp khác nhau.
-- **Free / Pro:** Free xem lá số, tổng quan, cung Mệnh; Pro mở 11 cung còn lại, Tứ Hóa từng đại vận, lưu niên 2 năm, bản in, AI (tùy chọn).
+- **Free / Pro:** Free xem lá số, tổng quan, cung Mệnh; Pro mở 11 cung còn lại, Tứ Hóa từng đại vận, lưu niên 2 năm, bản luận giải trọn đời, bản in.
 - **Xem nhanh không lưu:** không nhập email thì lá số được tính hoàn toàn trong trình duyệt.
 - **Đồng ý tách mục đích, lưu bằng chứng; email teaser có nhãn [QC], từ chối nhận một chạm; quyền xóa dữ liệu.**
 - **Thanh toán VietQR:** payOS tự động hoặc chuyển khoản + xác nhận thủ công ở `/admin`.

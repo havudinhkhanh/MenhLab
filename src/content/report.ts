@@ -98,10 +98,10 @@ export const DOMAIN_SIGNS: Record<string, { good: string; trigger: string; conse
     early: 'hai người nói chuyện ít dần, chỉ còn trao đổi việc nhà và lịch đưa đón',
   },
   'Tử Tức': {
-    good: 'con cái (hoặc người bạn dìu dắt, dự án của bạn) lớn lên theo cách riêng mà vẫn gần bạn',
+    good: 'con cái (hoặc người được bạn dìu dắt, dự án của bạn) lớn lên theo cách riêng mà vẫn gần bạn',
     trigger: 'các mốc chuyển cấp, chọn trường, chọn nghề của con; hoặc lúc dự án gặp khó',
     consequence: 'kiểm soát quá nhiều khiến người kia (hoặc dự án) mất tự chủ',
-    early: 'bạn biết ít hơn trước về những gì con (hoặc người bạn dìu dắt) đang nghĩ',
+    early: 'bạn biết ít hơn trước về những gì con (hoặc người được bạn dìu dắt) đang nghĩ',
   },
   'Tài Bạch': {
     good: 'thu nhập tăng đều, có quỹ dự phòng, và bạn biết rõ tiền mỗi tháng đi đâu',
