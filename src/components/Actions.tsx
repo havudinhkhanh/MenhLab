@@ -123,7 +123,7 @@ export function SaveChart({ input, conventions }: { input: BirthInput; conventio
         consent: { processing: c1, marketing: c2, research: c3 },
       });
       sessionStorage.removeItem('menhlab:draft');
-      router.push(`/la-so/${r.id}?moi=1#mo-khoa`);
+      router.push(`/la-so/${r.id}?moi=1&tn=0#mo-khoa`); // đã xem lá số rồi → không làm thí nghiệm mù
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi');
       setBusy(false);

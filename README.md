@@ -12,6 +12,10 @@ Trang lá số Tử Vi theo hướng nâng cao hiểu biết: giải thích mọ
 - **Luận giải có căn cứ:** mỗi nhận định kèm "Vì sao?" (sao nào, ở đâu, chiếu từ đâu), câu hỏi tự kiểm chứng, không ngôn ngữ hù dọa.
 - **Độ nhạy giờ sinh:** lá số thay đổi thế nào trong khoảng sai số giờ sinh và theo từng quy ước tính.
 - **Tìm giờ sinh theo sự kiện đời** (`/chinh-gio`): xếp hạng các canh giờ theo những sự kiện lớn có năm và mô tả tính cách "mù", ngưỡng kết luận hiệu chuẩn bằng dữ liệu ngẫu nhiên, chạy hoàn toàn trên trình duyệt.
+- **Phòng thí nghiệm mở** (`/nghien-cuu`): thí nghiệm ghép cặp mù đăng ký trước, số liệu công khai kể cả khi bất lợi; tỷ lệ nền của mọi đặc điểm lá số từ mô phỏng 24.000 lá số.
+- **Cách cục có điều kiện:** 20 cách phổ biến, mỗi cách ghi rõ điều kiện đạt/thiếu và bao nhiêu % người có.
+- **Học trên chính lá số của bạn:** từng bước an sao tính trên dữ liệu người dùng, tự đối chiếu với engine; loạt 9 bài Học đọc lá số có câu hỏi kiểm tra.
+- **168 trang kiến thức sao × cung** có căn cứ, tỷ lệ nền, sao đồng cung, bảng độ sáng hai trường phái.
 - **Hai trường phái độ sáng sao:** bảng sách Việt (mặc định) hoặc Toàn Thư; mỗi lá số liệt kê các sao hai bảng xếp khác nhau.
 - **Free / Pro:** Free xem lá số, tổng quan, cung Mệnh; Pro mở 11 cung còn lại, Tứ Hóa từng đại vận, lưu niên 2 năm, bản in, AI (tùy chọn).
 - **Xem nhanh không lưu:** không nhập email thì lá số được tính hoàn toàn trong trình duyệt.

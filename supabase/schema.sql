@@ -85,3 +85,21 @@ alter table consent_log enable row level security;
 alter table orders enable row level security;
 alter table email_log enable row level security;
 alter table feedback enable row level security;
+
+-- ============================================================================
+-- Phòng thí nghiệm mở (thêm từ phiên bản 2). Nếu đã chạy schema cũ, chỉ cần chạy phần dưới đây.
+-- ============================================================================
+
+-- Kết quả bài kiểm tra ghép cặp mù: chỉ lưu đúng/sai và số phương án, KHÔNG lưu ngày giờ sinh.
+-- chart_id chỉ có khi người dùng đã lưu lá số và đồng ý mục đích nghiên cứu.
+create table if not exists lab_results (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  test text not null,
+  n_options smallint not null,
+  correct boolean not null,
+  confidence smallint check (confidence between 1 and 5),
+  chart_id uuid references charts(id) on delete set null
+);
+create unique index if not exists lab_results_chart_test on lab_results (chart_id, test) where chart_id is not null;
+alter table lab_results enable row level security;

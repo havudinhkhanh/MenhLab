@@ -50,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
       <section>
         <h2>Khác gì những trang lá số khác</h2>
-        <div className="principles">
+        <div className="principles" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           <div>
             <h3>Lịch và giờ sinh tính kỹ</h3>
             <p>
@@ -63,6 +63,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
             <p>
               Không phán bừa. Mỗi câu luận giải ghi rõ sao nào, ở cung nào, theo quy tắc gì — để bạn tự kiểm chứng hoặc mang đi hỏi
               người khác.
+            </p>
+          </div>
+          <div>
+            <h3>Tự kiểm chứng, công bố công khai</h3>
+            <p>
+              Chúng tôi làm thí nghiệm mù để đo xem lá số có mô tả đúng con người hơn mức ngẫu nhiên không, và công bố kết quả kể cả khi bất lợi.{' '}
+              <Link href="/nghien-cuu">Xem Phòng thí nghiệm mở</Link>.
             </p>
           </div>
           <div>

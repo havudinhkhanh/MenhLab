@@ -48,9 +48,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {config.brand}
             </Link>
             <nav className="nav" aria-label="Chính">
+              <Link href="/hoc">Học đọc lá số</Link>
               <Link href="/tu-dien">Từ điển</Link>
               <Link href="/chinh-gio">Tìm giờ sinh</Link>
-              <Link href="/phuong-phap">Phương pháp</Link>
+              <Link href="/nghien-cuu">Nghiên cứu</Link>
               <Link href="/bang-gia">Bảng giá</Link>
               <Link href="/tim-la-so">Lá số của tôi</Link>
             </nav>
@@ -63,7 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav aria-label="Pháp lý">
               <Link href="/bao-mat">Chính sách bảo mật</Link>
               <Link href="/dieu-khoan">Điều khoản</Link>
-              <Link href="/phuong-phap">Tử Vi và khoa học</Link>
+              <Link href="/phuong-phap">Phương pháp</Link>
+              <Link href="/nghien-cuu">Tử Vi và khoa học</Link>
+              <Link href="/sao">14 chính tinh × 12 cung</Link>
               <a href={`mailto:${config.owner.email}`}>Liên hệ</a>
             </nav>
             <p>

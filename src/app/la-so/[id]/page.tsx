@@ -26,13 +26,17 @@ export default async function SavedChartPage({
   const row = await getChartRow(id);
   if (!row) notFound();
 
-  const { chart, reading, sensitivity } = computeReport(row.birth_input, row.conventions, row.is_pro);
+  const { chart, reading, sensitivity, patterns, derivation, menhKey } = computeReport(row.birth_input, row.conventions, row.is_pro);
 
   return (
     <ChartReport
       chart={chart}
       reading={reading}
       sensitivity={sensitivity}
+      patterns={patterns}
+      derivation={derivation}
+      menhKey={menhKey}
+      blindGate={sp.moi === '1' && sp.tn !== '0' ? { gateKey: row.id, researchConsent: row.consent_research } : undefined}
       isPro={row.is_pro}
       chartId={row.id}
       isNew={sp.moi === '1'}

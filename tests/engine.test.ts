@@ -173,3 +173,23 @@ test('Độ sáng theo hai trường phái', async () => {
     assert.equal(s.brightness?.name ?? '—', d.viet);
   }
 });
+
+test('Ngày có ở lịch Việt nhưng không có ở lịch Trung Quốc vẫn lập được lá số', () => {
+  // 30/3 âm lịch năm Ất Mão 1975 theo lịch Việt Nam
+  const c = buildChart({ ...base, year: 1975, month: 3, day: 30, gender: 'nam' });
+  assert.equal(c.birth.lunar.day, 30);
+  assert.equal(c.calendarNote, undefined);
+  assert.equal(c.palaces.flatMap((p) => p.majors).length, 14);
+  // Quét toàn bộ ngày 1950–2010: không ngày nào làm lỗi
+  for (let y = 1950; y <= 2010; y++) {
+    for (let m = 1; m <= 12; m++) {
+      for (const d of [29, 30]) {
+        try {
+          buildChart({ ...base, calendar: 'am', year: y, month: m, day: d, gender: 'nu' });
+        } catch (e) {
+          if (!(e instanceof Error) || !/không tồn tại/.test(e.message)) throw e;
+        }
+      }
+    }
+  }
+});

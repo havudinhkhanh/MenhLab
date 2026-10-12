@@ -11,6 +11,10 @@ import ChartExplorer, { type PalaceView } from './ChartExplorer';
 import { AiPanel, CheckoutButton, DeleteData, PrintButton, SaveChart } from './Actions';
 import Rating from './Rating';
 import { T } from './TermLayer';
+import BlindGate from './BlindTest';
+import type { PatternHit } from '@/lib/engine/patterns';
+import type { DerivationStep } from '@/lib/engine/derivation';
+import { RATES, fmtPct, oneIn, rate } from '@/data/rates';
 
 export interface ReportProps {
   chart: Chart;
@@ -23,6 +27,11 @@ export interface ReportProps {
   ai?: { enabled: boolean; synthesis: string | null; qa: { q: string; a: string }[]; limit: number };
   draft?: { input: BirthInput; conventions: Conventions };
   paymentReturn?: 'ok' | 'cancel';
+  patterns: PatternHit[];
+  derivation: DerivationStep[];
+  menhKey: string;
+  /** Hiện thí nghiệm ghép cặp mù trước khi xem lá số. */
+  blindGate?: { gateKey: string; researchConsent?: boolean };
 }
 
 const TIME_MODE: Record<string, string> = {
@@ -32,8 +41,21 @@ const TIME_MODE: Record<string, string> = {
 };
 
 export default function ChartReport(p: ReportProps) {
+  const body = <ReportBody {...p} />;
+  if (!p.blindGate || !RATES.n) return body;
+  return (
+    <BlindGate gateKey={p.blindGate.gateKey} truth={p.menhKey} pool={RATES.menhCombo} chartId={p.chartId} researchConsent={p.blindGate.researchConsent}>
+      {body}
+    </BlindGate>
+  );
+}
+
+function ReportBody(p: ReportProps) {
   const { chart, reading, sensitivity, isPro, chartId } = p;
   const pro = (label: string) => (isPro ? null : <span className="pill pro">{label}</span>);
+  const menhRate = rate(RATES.menhCombo[p.menhKey]);
+  const thanName = chart.palaces[chart.thanBranch].name;
+  const thanRate = rate(RATES.thanCu[thanName]);
 
   return (
     <div className="wrap">
@@ -72,7 +94,8 @@ export default function ChartReport(p: ReportProps) {
         <a href="#dai-van">Đại vận</a>
         <a href="#nam-nay">Năm {reading.years[0]?.year}</a>
         <a href="#do-nhay">Độ nhạy giờ sinh</a>
-        <a href="#cach-tinh">Cách tính</a>
+        <a href="#cach-cuc">Cách cục</a>
+        <a href="#cach-tinh">Cách an sao</a>
         {isPro && p.ai?.enabled && <a href="#ai">Hỏi đáp</a>}
       </nav>
 
@@ -87,11 +110,55 @@ export default function ChartReport(p: ReportProps) {
             </div>
           ))}
         </div>
+        {menhRate !== undefined && (
+          <p className="note" style={{ marginTop: 16 }}>
+            <b>Tỷ lệ nền:</b> {fmtPct(menhRate)} số người có cung Mệnh với bộ sao này ({oneIn(menhRate)}); {fmtPct(thanRate)} có Thân cư{' '}
+            {thanName}. Nghĩa là những gì viết về cung Mệnh của bạn cũng áp dụng cho hàng triệu người Việt khác — lá số không "độc nhất" như
+            nhiều nơi quảng cáo. <a href="/nghien-cuu#ty-le-nen">Cách tính tỷ lệ nền</a>.
+          </p>
+        )}
         <div className="prose" style={{ marginTop: 20 }}>
           {reading.overviewText.map((t, i) => (
             <p key={i}>{t}</p>
           ))}
         </div>
+      </section>
+
+      <section id="cach-cuc" className="section">
+        <h2>Cách cục</h2>
+        <p className="muted">
+          Cách cục là các bộ sao được sách cổ đặt tên. Mỗi cách dưới đây ghi rõ từng điều kiện và lá số của bạn đạt điều kiện nào. Tỷ lệ cho
+          biết bao nhiêu % người có cách đó — để bạn biết nó hiếm hay phổ biến. Lưu ý: sách xếp cách "tốt" hay "xấu" là quy ước cổ; chưa có
+          dữ liệu cho thấy người có cách tốt thành công hơn.
+        </p>
+        {p.patterns.length === 0 ? (
+          <p>Lá số này không có cách cục nào trong danh sách {Object.keys(RATES.patterns).length || 20} cách phổ biến MệnhLab kiểm tra. Điều đó hoàn toàn bình thường.</p>
+        ) : (
+          p.patterns.map((x) => {
+            const r = RATES.patterns[x.id];
+            const pr = r ? rate(r.du) : undefined;
+            return (
+              <article key={x.id} className="reading">
+                <h3>
+                  {x.name}{' '}
+                  <span className={`pill${x.status === 'du' ? '' : ' pro'}`}>{x.status === 'du' ? 'Đủ điều kiện' : 'Gần đủ — thiếu 1 điều kiện'}</span>{' '}
+                  <span className="small muted" style={{ fontWeight: 400 }}>
+                    Sách xếp: {x.tone}
+                    {pr !== undefined ? ` · có ở ${fmtPct(pr)} số lá số` : ''}
+                  </span>
+                </h3>
+                <p className="prose">{x.meaning}</p>
+                <ul className="steps small">
+                  {x.conditions.map((c, i) => (
+                    <li key={i} style={{ listStyle: 'none', marginLeft: -20 }}>
+                      {c.ok ? '✓' : '✗'} {c.text}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })
+        )}
       </section>
 
       <section id="12-cung" className="section">
@@ -219,7 +286,12 @@ export default function ChartReport(p: ReportProps) {
       </section>
 
       <section id="cach-tinh" className="section">
-        <h2>Lá số này được tính thế nào</h2>
+        <h2>Lá số của bạn được an thế nào</h2>
+        <p className="muted">
+          Lá số Tử Vi là một phép tính có quy tắc — ai cũng kiểm lại được bằng giấy bút. Dưới đây là từng bước, dùng chính dữ liệu của bạn. Dấu
+          ✓ nghĩa là kết quả tính tay khớp với lá số máy tính đã an.
+        </p>
+        <h3>Bước 0. Từ ngày giờ đồng hồ đến ngày giờ âm lịch</h3>
         <ol className="steps">
           {chart.birth.steps.map((s, i) => (
             <li key={i}>{s}</li>
@@ -229,6 +301,33 @@ export default function ChartReport(p: ReportProps) {
           Quy ước đang dùng: {TIME_MODE[chart.conventions.timeMode]}; giờ Tý {chart.conventions.dayChange === '23h' ? 'đổi ngày lúc 23h' : 'đổi ngày lúc 0h'}; tháng
           nhuận {chart.conventions.leapRule === 'tach-15' ? 'tách tại ngày 15' : 'tính như tháng chính'}; độ sáng sao theo{' '}
           {chart.brightnessSchool === 'viet' ? 'sách Tử Vi Việt Nam' : 'Tử Vi Đẩu Số Toàn Thư'}. <a href="/phuong-phap">Phương pháp chi tiết</a>.
+        </p>
+        {p.derivation.map((st, i) => (
+          <div key={i}>
+            <h3>
+              Bước {i + 1}. {st.title} {st.check === true && <span className="pill">✓ khớp lá số</span>}
+              {st.check === false && <span className="pill pro">chưa khớp — vui lòng báo lỗi</span>}
+            </h3>
+            <div className="prose">
+              {st.lines.map((l, j) => (
+                <p key={j}>{l}</p>
+              ))}
+            </div>
+            {st.terms && (
+              <p className="small muted">
+                Thuật ngữ:{' '}
+                {st.terms.map((t, j) => (
+                  <span key={t}>
+                    {j > 0 && ', '}
+                    <T name={t}>{t}</T>
+                  </span>
+                ))}
+              </p>
+            )}
+          </div>
+        ))}
+        <p className="small">
+          Muốn hiểu sâu hơn? Xem loạt bài <a href="/hoc">Học đọc lá số</a>.
         </p>
         <h3>Hai trường phái độ sáng</h3>
         {chart.brightnessDiffs.length === 0 ? (

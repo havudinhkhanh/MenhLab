@@ -72,7 +72,7 @@ export interface Reading {
   currentAge: number;
 }
 
-const COMBOS: Record<string, string> = {
+export const COMBOS: Record<string, string> = {
   'Tử Vi+Thiên Phủ': 'Tử Phủ đồng cung: hai sao "vua" và "kho" ở cùng nhau — thiên về ổn định, vị thế và khả năng quản trị; mặt trái là khó chịu khi phải phục tùng.',
   'Tử Vi+Thất Sát': 'Tử Sát: sách cổ gọi là "hóa sát vi quyền" — sự quyết liệt được dẫn dắt thành năng lực lãnh đạo.',
   'Tử Vi+Phá Quân': 'Tử Phá: người muốn cải tổ, thay đổi trật tự cũ; nhiều bước ngoặt.',

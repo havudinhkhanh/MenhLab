@@ -80,6 +80,8 @@ export default function RectifyTool() {
       JSON.stringify({
         input: { ...base, timeType: 'branch', branch: b, certainty: 'khoang-120' },
         conventions: DEFAULT_CONVENTIONS,
+        // Người dùng đã đọc mô tả cung Mệnh ở bước 2 → không làm bài kiểm tra mù (kết quả sẽ bị nhiễm)
+        source: 'rectify',
       }),
     );
     router.push('/xem');

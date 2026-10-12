@@ -241,8 +241,20 @@ Dành cho người không biết hoặc không chắc giờ sinh. Người dùng
 
 Mặc định dùng bảng sách Tử Vi Việt Nam (thang 5 mức M/V/Đ/B/H, dữ liệu từ dự án mã nguồn mở lasotuvi, giấy phép MIT). Người dùng có thể chọn bảng Tử Vi Đẩu Số Toàn Thư trong "Tùy chọn nâng cao". Mỗi lá số liệt kê những sao hai bảng xếp khác nhau. Sửa bảng sách Việt trong `src/lib/engine/brightness.ts`.
 
-## 15. Những gì chưa có (gợi ý làm tiếp)
+## 15. Phòng thí nghiệm mở, cách cục, Học đọc lá số, trang sao × cung
+
+**Cập nhật cơ sở dữ liệu (bắt buộc nếu bạn đã chạy schema cũ):** vào Supabase → SQL Editor → chạy phần cuối file `supabase/schema.sql` (đoạn "Phòng thí nghiệm mở", tạo bảng `lab_results`). Chạy lại cả file cũng an toàn.
+
+- **Thí nghiệm ghép cặp mù:** ngay sau khi lập lá số (chế độ xem nhanh, hoặc lần đầu mở lá số vừa lưu), người dùng được mời chọn 1 trong 4 mô tả giống mình nhất trước khi thấy lá số. Kết quả chỉ ghi đúng/sai khi người dùng đồng ý. Trang `/nghien-cuu` hiển thị số liệu trực tiếp, thiết kế đăng ký trước và kết luận tự động khi đủ cỡ mẫu.
+- **Tỷ lệ nền:** `src/data/base-rates.json` và `rates-lite.json` sinh bằng `npx tsx scripts/compute-base-rates.ts 24000` (khoảng 11 phút). Chạy lại khi đổi quy tắc an sao hoặc danh sách cách cục, rồi chạy đoạn tách bản gọn (xem cuối script).
+- **Cách cục:** 20 cách phổ biến trong `src/lib/engine/patterns.ts`, mỗi cách là danh sách điều kiện tường minh.
+- **Cách an sao:** mỗi lá số hiển thị từng bước an sao trên chính dữ liệu người dùng, tự đối chiếu với engine (`src/lib/engine/derivation.ts`).
+- **Học đọc lá số:** 9 bài có câu hỏi kiểm tra, sửa trong `src/content/lessons.ts`.
+- **168 trang sao × cung** (`/sao/<sao>/<cung>`) và 14 trang từng sao, dựng tĩnh, có `sitemap.xml` và `robots.txt`. Sau khi có tên miền thật, khai báo sitemap trong Google Search Console: `https://<tên miền>/sitemap.xml`.
+
+## 16. Những gì chưa có (gợi ý làm tiếp)
 
 - Chưa xuất hóa đơn điện tử tự động.
-- Chưa có giới hạn tốc độ (rate limit) ở tầng hạ tầng; hiện chỉ chặn 10 lá số/email/giờ.
-- Công cụ tìm giờ sinh chưa lưu kết quả vào lá số đã lưu (người dùng bấm "Lập lá số" rồi lưu như bình thường).
+- Chưa có giới hạn tốc độ (rate limit) ở tầng hạ tầng; hiện chỉ chặn 10 lá số/email/giờ. API `/api/lab` nhận kết quả ẩn danh nên có thể bị gửi rác — khi lưu lượng lớn nên thêm Cloudflare Turnstile hoặc giới hạn theo IP.
+- Công cụ tìm giờ sinh chưa lưu kết quả vào lá số đã lưu.
+- So sánh hai lá số, lưu nguyệt 12 tháng, phi hóa Tứ Hóa.

@@ -15,7 +15,7 @@ import { CANH_GIO } from './canchi';
 import { buildChart, yearlyLuck, type Chart, type Palace } from './chart';
 import type { BirthInput, Conventions } from './birth';
 import { HOA_ORDER, TU_HOA } from './names';
-import { MAJOR } from '@/content/stars';
+import { blindMenhText, comboKey } from '@/content/blind';
 
 export type EventKind =
   | 'ket-hon'
@@ -102,23 +102,13 @@ export function traitDescriptions(charts: Map<number, Chart>): TraitDescription[
   const groups = new Map<string, { stars: string[]; borrowed: boolean; branches: number[] }>();
   for (const [b, c] of charts) {
     const m = menhStars(c);
-    const id = (m.borrowed ? 'vcd:' : '') + m.stars.join('+');
+    const id = comboKey(m.stars, m.borrowed);
     const g = groups.get(id) ?? { ...m, branches: [] };
     g.branches.push(b);
     groups.set(id, g);
   }
   const list = [...groups].sort((a, b) => hash(a[0]) - hash(b[0]));
-  return list.map(([id, g], i) => {
-    const parts: string[] = [];
-    if (g.borrowed) parts.push('Tính cách khá linh hoạt, dễ thay đổi theo môi trường và những người xung quanh.');
-    for (const s of g.stars) {
-      const info = MAJOR[s];
-      if (!info) continue;
-      parts.push(info.domains.menh ?? info.short);
-      parts.push(`Điểm mạnh: ${info.strengths.join('; ').toLowerCase()}. Điểm hay vấp: ${info.watch.join('; ').toLowerCase()}.`);
-    }
-    return { id, letter: String.fromCharCode(65 + i), text: parts.join(' '), branches: g.branches };
-  });
+  return list.map(([id, g], i) => ({ id, letter: String.fromCharCode(65 + i), text: blindMenhText(id), branches: g.branches }));
 }
 
 function palaceAt(c: Chart, branch: number): Palace {

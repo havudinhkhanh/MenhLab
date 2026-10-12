@@ -156,20 +156,33 @@ export function buildChart(input: BirthInput, conv: Conventions = DEFAULT_CONVEN
   const genderZh = input.gender === 'nam' ? '男' : '女';
   const fixLeap = conv.leapRule === 'tach-15';
 
-  const a = astro.byLunar(
-    `${lunar.year}-${lunar.month}-${lunar.day}`,
-    branch,
-    genderZh,
-    lunar.leap,
-    fixLeap,
-    'zh-CN',
-  );
+  // Chuẩn hóa tháng nhuận trước (để không phụ thuộc lịch Trung Quốc có nhuận tháng đó hay không)
+  let starMonth = lunar.month;
+  if (lunar.leap && fixLeap && lunar.day > 15) starMonth = (lunar.month % 12) + 1;
 
+  // iztro đổi ngày qua lịch Trung Quốc. Vị trí mọi sao chỉ phụ thuộc Can Chi năm + tháng/ngày/giờ âm lịch,
+  // và Can Chi lặp lại sau 60 năm. Nếu ngày này không có trong lịch Trung Quốc năm đó (lệch lịch),
+  // dùng năm cùng Can Chi cách 60/120 năm — kết quả an sao giống hệt.
+  type Astro = ReturnType<typeof astro.byLunar>;
+  let a: Astro | undefined;
   let calendarNote: string | undefined;
-  const raw = a.rawDates.lunarDate;
-  if (raw.lunarYear !== lunar.year || raw.lunarMonth !== lunar.month || raw.lunarDay !== lunar.day) {
+  const tryYears = [lunar.year, lunar.year - 60, lunar.year + 60, lunar.year - 120, lunar.year + 120].filter((y) => y >= 1900 && y <= 2100);
+  for (const y of tryYears) {
+    try {
+      const cand = astro.byLunar(`${y}-${starMonth}-${lunar.day}`, branch, genderZh, false, true, 'zh-CN');
+      const raw = cand.rawDates.lunarDate;
+      if (raw.lunarMonth === starMonth && raw.lunarDay === lunar.day && !raw.isLeap) {
+        a = cand;
+        break;
+      }
+    } catch {
+      // ngày không tồn tại trong lịch Trung Quốc năm đó — thử năm khác
+    }
+  }
+  if (!a) {
+    a = astro.byLunar(`${lunar.year}-${starMonth}-${Math.min(lunar.day, 29)}`, branch, genderZh, false, true, 'zh-CN');
     calendarNote =
-      'Ngày sinh rơi vào giai đoạn hiếm hoi lịch âm Việt Nam và Trung Quốc lệch nhau, khiến ngày này không tồn tại trong lịch Trung Quốc. Lá số đã an theo ngày gần nhất; nên đối chiếu thêm với chuyên gia.';
+      'Ngày sinh rơi vào trường hợp rất hiếm lịch âm Việt Nam và Trung Quốc lệch nhau mà thư viện an sao chưa xử lý được; lá số đã an theo ngày 29. Nên đối chiếu thêm với chuyên gia.';
   }
 
   const { can: yearCan, chi: yearChi } = yearCanChi(lunar.year);

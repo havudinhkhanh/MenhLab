@@ -15,7 +15,7 @@ type State =
   | { kind: 'loading' }
   | { kind: 'empty' }
   | { kind: 'error'; msg: string }
-  | { kind: 'ok'; draft: { input: BirthInput; conventions: Conventions }; data: ReturnType<typeof computeReport> };
+  | { kind: 'ok'; draft: { input: BirthInput; conventions: Conventions; source?: string }; data: ReturnType<typeof computeReport> };
 
 export default function QuickView() {
   const [s, setS] = useState<State>({ kind: 'loading' });
@@ -24,7 +24,7 @@ export default function QuickView() {
     const raw = sessionStorage.getItem(DRAFT_KEY);
     if (!raw) return setS({ kind: 'empty' });
     try {
-      const draft = JSON.parse(raw) as { input: BirthInput; conventions: Conventions };
+      const draft = JSON.parse(raw) as { input: BirthInput; conventions: Conventions; source?: string };
       setS({ kind: 'ok', draft, data: computeReport(draft.input, draft.conventions, false) });
     } catch (e) {
       setS({ kind: 'error', msg: e instanceof Error ? e.message : 'Không lập được lá số.' });
@@ -48,6 +48,22 @@ export default function QuickView() {
       </div>
     );
 
-  const { chart, reading, sensitivity } = s.data;
-  return <ChartReport chart={chart} reading={reading} sensitivity={sensitivity} isPro={false} draft={s.draft} />;
+  const { chart, reading, sensitivity, patterns, derivation, menhKey } = s.data;
+  const gateKey = JSON.stringify(s.draft.input)
+    .split('')
+    .reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 7)
+    .toString(36);
+  return (
+    <ChartReport
+      chart={chart}
+      reading={reading}
+      sensitivity={sensitivity}
+      patterns={patterns}
+      derivation={derivation}
+      menhKey={menhKey}
+      blindGate={s.draft.source === 'rectify' ? undefined : { gateKey }}
+      isPro={false}
+      draft={s.draft}
+    />
+  );
 }
