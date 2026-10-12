@@ -16,6 +16,8 @@ import BlindGate from './BlindTest';
 import type { PatternHit } from '@/lib/engine/patterns';
 import type { DerivationStep } from '@/lib/engine/derivation';
 import { RATES, fmtPct, oneIn, rate } from '@/data/rates';
+import type { LifeReport } from '@/lib/lifeReport';
+import { LifeAxes, LifeClosing, LifeOpening, LifeStages, LifeSummary } from './LifeBlocks';
 
 export interface ReportProps {
   chart: Chart;
@@ -31,6 +33,7 @@ export interface ReportProps {
   patterns: PatternHit[];
   derivation: DerivationStep[];
   menhKey: string;
+  life: LifeReport;
   /** Hiện thí nghiệm ghép cặp mù trước khi xem lá số. */
   blindGate?: { gateKey: string; researchConsent?: boolean };
   /** Bản xem thử Pro của quản trị viên (không lưu, không có hành động mua/xóa). */
@@ -55,6 +58,7 @@ export default function ChartReport(p: ReportProps) {
 
 const SECTIONS: { id: string; label: string; palaces?: string[]; intro?: string }[] = [
   { id: 'doc-nhanh', label: 'Đọc nhanh' },
+  { id: 'mo-dau', label: 'Mở đầu' },
   {
     id: 'tinh-cach',
     label: 'Tính cách',
@@ -83,8 +87,11 @@ const SECTIONS: { id: string; label: string; palaces?: string[]; intro?: string 
     intro:
       'Tử Vi xưa dùng cung Tật Ách để luận bệnh. Ngày nay chưa có bằng chứng nào cho thấy lá số đoán được bệnh, nên MệnhLab chỉ đọc cung này như lời nhắc về nhịp sinh hoạt và cách bạn chịu áp lực. Mọi lo lắng về sức khỏe hãy hỏi bác sĩ.',
   },
+  { id: 'lien-cung', label: 'Bức tranh toàn cảnh' },
+  { id: 'dai-van', label: 'Các giai đoạn cuộc đời' },
   { id: 'nam-nay', label: 'Năm nay & từng tháng' },
-  { id: 'dai-van', label: 'Các chặng 10 năm' },
+  { id: 'tong-ket', label: 'Tổng kết' },
+  { id: 'loi-nhan', label: 'Lời nhắn' },
   { id: 'la-so', label: 'Lá số gốc' },
   { id: 'do-tin-cay', label: 'Độ tin cậy & cách tính' },
 ];
@@ -222,6 +229,11 @@ function ReportBody(p: ReportProps) {
             </details>
           </section>
 
+          <section id="mo-dau" className="section">
+            <h2>Mở đầu: bức chân dung</h2>
+            <LifeOpening life={p.life} />
+          </section>
+
           {SECTIONS.filter((s) => s.palaces).map((s) => (
             <section key={s.id} id={s.id} className="section">
               <h2>
@@ -245,6 +257,43 @@ function ReportBody(p: ReportProps) {
             </section>
           ))}
 
+          <section id="lien-cung" className="section">
+            <h2>Bức tranh toàn cảnh: đọc các cung cùng nhau {pro('Pro')}</h2>
+            <p className="section-intro">
+              Đọc từng cung riêng lẻ giống như xem từng mảnh ghép. Phần này ghép các cung có liên hệ với nhau thành 4 "trục" để trả lời những câu
+              hỏi lớn hơn: bạn tạo ra giá trị bằng cách nào, bạn trong và ngoài khác nhau ra sao, điều gì làm bạn căng và giúp bạn hồi lại, tiền
+              của bạn có đọng lại thành tài sản không.
+            </p>
+            <LifeAxes life={p.life} />
+          </section>
+
+          <section id="dai-van" className="section">
+            <h2>Các giai đoạn cuộc đời {pro('Pro: chặng hiện tại, sắp tới và sau nữa')}</h2>
+            <p className="section-intro">
+              Tử Vi chia đời người thành các chặng 10 năm (gọi là <T>Đại vận</T>). Mỗi chặng đi qua một cung trên lá số, và chủ đề của cung đó trở
+              thành "khí hậu" của cả chặng. Bạn đang {reading.currentAge} tuổi âm. Với {chart.amDuong}, các chặng đi theo chiều{' '}
+              {chart.daiVanForward ? 'thuận' : 'nghịch'} trên lá số.
+            </p>
+            <LifeStages life={p.life} />
+            <details className="howto" style={{ marginTop: 24 }}>
+              <summary>Xem toàn bộ các chặng 10 năm trong đời</summary>
+            <ol className="timeline">
+              {reading.daiVan.map((d) => (
+                <li key={d.branch} className={d.current ? 'now' : ''}>
+                  <div>
+                    <span className="age">
+                      {d.range[0]}–{d.range[1]} tuổi
+                    </span>{' '}
+                    · cung {d.palace} {d.current && <span className="pill">Đang ở chặng này</span>}
+                  </div>
+                  <p style={{ margin: '4px 0' }}>{d.summary}</p>
+                  <DaiVanNotes d={d} />
+                </li>
+              ))}
+            </ol>
+            </details>
+          </section>
+
           <section id="nam-nay" className="section">
             <h2>
               Năm nay và từng tháng {pro(`Pro: đầy đủ năm ${y0?.year} và ${y0 ? y0.year + 1 : ''}`)}
@@ -262,27 +311,14 @@ function ReportBody(p: ReportProps) {
             </p>
           </section>
 
-          <section id="dai-van" className="section">
-            <h2>Các chặng 10 năm {pro('Pro: cơ hội và điều cần chuẩn bị từng chặng')}</h2>
-            <p className="section-intro">
-              Tử Vi chia đời người thành các chặng 10 năm (gọi là <T>Đại vận</T>). Mỗi chặng đi qua một cung trên lá số, và chủ đề của cung đó trở
-              thành "khí hậu" của cả chặng. Bạn đang {reading.currentAge} tuổi âm. Với {chart.amDuong}, các chặng đi theo chiều{' '}
-              {chart.daiVanForward ? 'thuận' : 'nghịch'} trên lá số.
-            </p>
-            <ol className="timeline">
-              {reading.daiVan.map((d) => (
-                <li key={d.branch} className={d.current ? 'now' : ''}>
-                  <div>
-                    <span className="age">
-                      {d.range[0]}–{d.range[1]} tuổi
-                    </span>{' '}
-                    · cung {d.palace} {d.current && <span className="pill">Đang ở chặng này</span>}
-                  </div>
-                  <p style={{ margin: '4px 0' }}>{d.summary}</p>
-                  <DaiVanNotes d={d} />
-                </li>
-              ))}
-            </ol>
+          <section id="tong-ket" className="section">
+            <h2>Tổng kết: dựa vào đâu, canh chừng gì, làm gì trước</h2>
+            <LifeSummary life={p.life} />
+          </section>
+
+          <section id="loi-nhan" className="section">
+            <h2>Lời nhắn</h2>
+            <LifeClosing life={p.life} />
           </section>
 
           <section id="la-so" className="section">

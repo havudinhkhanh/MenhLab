@@ -42,6 +42,7 @@ import {
 import { MAJOR, MINOR } from '@/content/stars';
 import { narratePalace, type PalaceStory } from './story';
 import { DOMAIN_DO, STAR_STORY } from '@/content/story';
+import { DOMAIN_SIGNS } from '@/content/report';
 
 export interface PalaceReading {
   branch: number;
@@ -103,6 +104,12 @@ export interface YearReading {
   paragraphs: string[];
   /** Diễn giải bằng văn xuôi: vì sao năm nay như vậy. */
   story: string[];
+  /** Tứ Hóa của năm, giải nghĩa theo từng cung. */
+  hoaNotes: { label: string; text: string }[];
+  /** Nhãn đánh giá nhanh cho 4 mặt. */
+  verdicts: { work: string; money: string; love: string; health: string };
+  /** 5 lời khuyên có phân loại. */
+  advice5: { kind: string; text: string }[];
   /** 12 tháng âm lịch (kèm tháng nhuận nếu có): tháng nào nên làm gì. */
   months: MonthReading[];
   /** Tóm tắt nhanh: tháng thuận nhất, tháng nên chậm lại. */
@@ -658,6 +665,36 @@ export function readYear(chart: Chart, y: number, now?: Date): YearReading {
         ]
       : []),
   ];
+  const hoaNotes = [
+    { label: `Hóa Lộc (${hoa[0].star}) vào cung ${L}`, text: `Cơ hội, nguồn lợi năm nay dễ đến từ ${MONEY_SOURCE[L]}.` },
+    { label: `Hóa Quyền (${hoa[1].star}) vào cung ${Q}`, text: `Bạn có nhiều tiếng nói, quyền chủ động hơn ở chuyện ${MONTH_TOPIC[Q]} — hợp đứng ra cầm trịch.` },
+    { label: `Hóa Khoa (${hoa[2].star}) vào cung ${K}`, text: `Uy tín và sự giúp đỡ đến ở chuyện ${MONTH_TOPIC[K]}; hợp giải quyết giấy tờ, học hành, xin hỗ trợ liên quan.` },
+    { label: `Hóa Kỵ (${hoa[3].star}) vào cung ${KY}`, text: `Chuyện ${MONTH_TOPIC[KY]} dễ vướng, dễ lo nghĩ. ${MONTH_AVOID[KY]}` },
+  ];
+  const tone = (good: boolean, bad: boolean, quiet: string) => (good && bad ? 'Có thuận có khó' : good ? 'Thuận lợi' : bad ? 'Cần làm chắc' : quiet);
+  const verdicts = {
+    work: tone([L, Q, K].includes('Quan Lộc') || LT === 'Quan Lộc', KY === 'Quan Lộc' || [KINH, DA].includes('Quan Lộc'), active('Quan Lộc') ? 'Nhiều thay đổi' : 'Bình ổn'),
+    money: tone([L, K].includes('Tài Bạch') || LT === 'Tài Bạch', KY === 'Tài Bạch' || [KINH, DA].includes('Tài Bạch'), active('Tài Bạch') ? 'Thu chi đều lớn' : 'Bình ổn'),
+    love: tone([L, Q, K].includes('Phu Thê'), KY === 'Phu Thê' || [KINH, DA].includes('Phu Thê'), active('Phu Thê') ? 'Được để tâm nhiều' : 'Bình ổn'),
+    health: flag ? 'Nên ưu tiên' : 'Bình ổn',
+  };
+  const bestM = months.filter((m) => m.tone === 'thuan' && !m.past).map((m) => m.label.replace('Tháng ', 'tháng '));
+  const slowM = months.filter((m) => m.tone === 'can-trong' && !m.past).map((m) => m.label.replace('Tháng ', 'tháng '));
+  const advice5 = [
+    { kind: 'Cơ hội nên ưu tiên', text: `${MONEY_TODO_SOURCE[L]}${bestM.length ? ` Thời điểm thuận để chủ động: ${bestM.slice(0, 3).join(', ')}.` : ''}` },
+    { kind: 'Nguyên tắc khi ra quyết định', text: MONEY_TODO_LEAK[KY] },
+    {
+      kind: 'Dấu hiệu sớm cần theo dõi',
+      text: flag
+        ? 'Giấc ngủ chập chờn, mệt kéo dài hơn một tuần, cáu gắt vô cớ — đó là lúc dừng lại nghỉ, đừng gồng thêm. Đặt lịch khám tổng quát trong quý đầu năm.'
+        : `Khi ${DOMAIN_SIGNS[TH]?.trigger ?? 'áp lực tăng'}, để ý xem mình có đang ${DOMAIN_SIGNS[TH]?.consequence ?? 'quyết vội'} không.`,
+    },
+    { kind: 'Giới hạn để bảo vệ mình', text: leaks.length > 1 ? `${leaks[0]} ${leaks[1]}` : `${leaks[0]} Đặt trần chi tiêu cho khoản này ngay từ đầu năm.` },
+    {
+      kind: 'Việc nên hoãn hoặc làm chậm',
+      text: slowM.length ? `Tránh chốt việc lớn vào ${slowM.slice(0, 3).join(', ')}; nếu bắt buộc, chuẩn bị kỹ gấp đôi bình thường.` : `Không có tháng nào cần đặc biệt tránh; chỉ nên chậm lại ở chuyện ${MONTH_TOPIC[KY]}.`,
+    },
+  ];
   const paragraphs = [
     ...summary,
     `Tiền bạc — ${sources.join(' ')} ${leaks.join(' ')}`,
@@ -685,6 +722,9 @@ export function readYear(chart: Chart, y: number, now?: Date): YearReading {
     evidence,
     paragraphs,
     story,
+    hoaNotes,
+    verdicts,
+    advice5,
     months,
     monthHighlights: monthHighlights(months),
   };
@@ -839,7 +879,7 @@ export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { lock
             evidence: [],
             support: 0,
             challenge: 0,
-            story: { ...p.story, paras: [], daily: [], extras: [], verdict: '', why: [] },
+            story: { ...p.story, paras: [], daily: [], extras: [], verdict: '', why: [], links: '', drift: '', rule: '' },
             locked: true,
           },
     ),
@@ -856,6 +896,8 @@ export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { lock
       evidence: [],
       paragraphs: [...y.summary, y.money.sources[0]],
       story: y.story.slice(0, 2),
+      hoaNotes: [],
+      advice5: [],
       // Free: thấy nhịp cả năm (tháng thuận / cần chậm lại), chi tiết chỉ tháng hiện tại.
       months: y.months.map((m) =>
         m.current ? m : { ...m, todo: [], avoid: [], money: undefined, note: undefined, evidence: [], locked: true },

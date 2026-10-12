@@ -7,10 +7,14 @@ import { PALACES, type DomainKey } from '@/content/palaces';
 import { MAJOR } from '@/content/stars';
 import { BAD_STAR_HEALTH, STAR_BODY, STAR_DOMAIN_EXTRA } from '@/content/plain';
 import { BRIGHT_STORY, HOA_STORY, MINOR_STORY, PALACE_QUESTION, STAR_STORY } from '@/content/story';
+import { DOMAIN_SIGNS, STAR_GUARD } from '@/content/report';
+import { slug } from './engine/names';
 
 export interface StoryExtra {
   text: string;
   good: boolean;
+  /** Tên sao (kèm Hóa nếu có), dùng để tóm tắt. */
+  name?: string;
 }
 
 export interface PalaceStory {
@@ -30,6 +34,14 @@ export interface PalaceStory {
   verdict: string;
   /** "Vì sao lá số nói vậy", bằng lời thường. */
   why: string[];
+  /** Cung này liên hệ với các cung khác thế nào. */
+  links: string;
+  /** Dấu hiệu bạn đang lệch hướng ở lĩnh vực này. */
+  drift: string;
+  /** Nguyên tắc nên giữ (chỉ ở các cung nói về chính bạn). */
+  rule: string;
+  /** Bài đọc thêm trong Kho kiến thức. */
+  readMore: { label: string; href: string }[];
 }
 
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
@@ -198,17 +210,17 @@ export function narratePalace(
       if (!h && !useMinor) continue;
       seen.add(s.name);
       if (domain === 'tat' && useMinor && !ms!.good && BAD_STAR_HEALTH[s.name]) {
-        extras.push({ text: `${prefix}${s.name} (${ms!.role}): ${BAD_STAR_HEALTH[s.name]}.`, good: false });
+        extras.push({ text: `${prefix}${s.name} (${ms!.role}): ${BAD_STAR_HEALTH[s.name]}.`, good: false, name: s.name });
         continue;
       }
       if (h && useMinor) {
         const hs = HOA_STORY[h];
-        extras.push({ text: `${prefix}${s.name} (${ms!.role}) lại mang Hóa ${h} (${hs.role}): ${ms!.adds}; thêm vào đó, ${hs.adds}.`, good: hs.good });
+        extras.push({ text: `${prefix}${s.name} (${ms!.role}) lại mang Hóa ${h} (${hs.role}): ${ms!.adds}; thêm vào đó, ${hs.adds}.`, good: hs.good, name: `${s.name} hóa ${h}` });
       } else if (h) {
         const hs = HOA_STORY[h];
-        extras.push({ text: `${prefix}${s.name} mang Hóa ${h} (${hs.role}): ${domain === 'menh' ? 'với bản thân bạn' : `ở chuyện ${DOMAIN_TOPIC[domain]}`}, ${hs.adds}.`, good: hs.good });
+        extras.push({ text: `${prefix}${s.name} mang Hóa ${h} (${hs.role}): ${domain === 'menh' ? 'với bản thân bạn' : `ở chuyện ${DOMAIN_TOPIC[domain]}`}, ${hs.adds}.`, good: hs.good, name: `${s.name} hóa ${h}` });
       } else {
-        extras.push({ text: `${prefix}${s.name} (${ms!.role}): ${ms!.adds}.`, good: ms!.good });
+        extras.push({ text: `${prefix}${s.name} (${ms!.role}): ${ms!.adds}.`, good: ms!.good, name: s.name });
       }
     }
   };
@@ -261,7 +273,39 @@ export function narratePalace(
   );
   if (p.tuan || p.triet) why.push(`${[p.tuan && 'Tuần', p.triet && 'Triệt'].filter(Boolean).join(', ')} nằm ở cạnh ô này.`);
 
+  // Liên hệ với các cung khác
+  const desc = (pal: Palace) =>
+    pal.majors.length
+      ? `${pal.majors.map((x) => x.name).join(', ')} — ${STAR_STORY[pal.majors[0].name]?.role ?? ''}`
+      : 'không có sao chính';
+  const t1 = chart.palaces[tp.trine[0]];
+  const t2 = chart.palaces[tp.trine[1]];
+  const topicOf = (pal: Palace) => DOMAIN_TOPIC[PALACES[pal.name].domain];
+  const links = `Trong Tử Vi, không cung nào đứng một mình. ${domain === 'menh' ? 'Con người bạn' : `Chuyện ${DOMAIN_TOPIC[domain]}`} còn chịu ảnh hưởng từ cung đối diện — ${opp.name} (${desc(opp)}) — và hai cung "tam hợp": ${t1.name} (${desc(t1)}) và ${t2.name} (${desc(t2)}). Nói đơn giản: ${domain === 'menh' ? 'con người bạn' : `chuyện ${DOMAIN_TOPIC[domain]}`} thường gắn với ${topicOf(opp)}, ${topicOf(t1)} và ${topicOf(t2)}; khi một trong ba chuyện đó thay đổi, chuyện này cũng dễ đổi theo.`;
+
+  // Dấu hiệu lệch hướng và nguyên tắc
+  const self = ['menh', 'quan', 'tai', 'phuc', 'di'].includes(domain);
+  const guard = lead0 ? STAR_GUARD[lead0.name] : undefined;
+  const sign = DOMAIN_SIGNS[p.name];
+  const drift =
+    self && guard
+      ? `Dấu hiệu bạn đang lệch hướng: khi ${guard.drift}. Lúc đó hãy dừng lại một nhịp và xem lại.`
+      : sign
+        ? `Dấu hiệu cần để ý: khi ${sign.trigger}, bạn dễ ${sign.consequence}. Nhận ra sớm là đã tránh được một nửa.`
+        : '';
+  const rule = self && guard ? guard.rule : '';
+  const readMore = [
+    { label: `Cung ${p.name} là gì?`, href: `/tu-dien#${slug(`Cung ${p.name}`)}` },
+    ...majors.slice(0, 2).map((x) => ({ label: `Sao ${x.name} ở cung ${p.name}`, href: `/sao/${slug(x.name)}/${slug(p.name)}` })),
+    ...(p.tuan || p.triet ? [{ label: 'Tuần, Triệt là gì?', href: '/hoc/tam-phuong-tuan-triet' }] : []),
+    ...(extras.some((e) => e.text.includes('Hóa ')) ? [{ label: 'Tứ Hóa là gì?', href: '/hoc/tu-hoa' }] : []),
+  ].slice(0, 4);
+
   return {
+    links,
+    drift,
+    rule,
+    readMore,
     q: pq?.q ?? `Cung ${p.name}`,
     about: pq?.about ?? info.short,
     lead,

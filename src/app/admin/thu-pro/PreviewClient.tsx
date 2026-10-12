@@ -89,6 +89,7 @@ export default function PreviewClient({ aiEnabled }: { aiEnabled: boolean }) {
         patterns={report.patterns}
         derivation={report.derivation}
         menhKey={report.menhKey}
+        life={report.life}
         isPro
         adminPreview
       />

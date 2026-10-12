@@ -7,6 +7,7 @@
  */
 import type { Chart } from './engine/chart';
 import type { Reading } from './reading';
+import type { LifeReport } from './lifeReport';
 
 const SYSTEM = `Bạn là người diễn giải lá số Tử Vi cho MệnhLab — một dịch vụ theo hướng nâng cao hiểu biết, minh bạch và tỉnh táo.
 
@@ -21,7 +22,7 @@ Quy tắc bắt buộc:
 7. Viết tiếng Việt tự nhiên, ấm áp, dễ hiểu cho người chưa biết thuật ngữ; giải thích thuật ngữ khi dùng lần đầu.
 8. Nếu giờ sinh không chắc chắn (độ ổn định thấp), nói rõ phần nào có thể thay đổi.`;
 
-function facts(chart: Chart, reading: Reading, stability?: string) {
+function facts(chart: Chart, reading: Reading, stability?: string, life?: LifeReport) {
   return JSON.stringify(
     {
       gioi_tinh: chart.gender === 'nam' ? 'Nam' : 'Nữ',
@@ -54,6 +55,17 @@ function facts(chart: Chart, reading: Reading, stability?: string) {
           .map((m) => ({ thang: m.label, duong_lich: `${m.from}–${m.to}`, cung: m.palace, nhip: m.tone, nen_lam: m.todo, nen_tranh: m.avoid, tien: m.money })),
       })),
       tuoi_mu_hien_tai: reading.currentAge,
+      ten: chart.name,
+      ...(life
+        ? {
+            chan_dung: life.portrait,
+            lien_cung: life.axes.map((a) => ({ truc: a.title, nhan_dinh: a.text, goi_y: a.move })),
+            giai_doan: life.stages.map((s) => ({ chang: s.title, nhan_dinh: s.paras, bon_mat: s.aspects })),
+            don_bay: life.levers,
+            diem_mu: life.blinds,
+            dac_biet: life.specials,
+          }
+        : {}),
     },
     null,
     0,
@@ -86,15 +98,15 @@ async function call(messages: { role: 'user' | 'assistant'; content: string }[],
     .trim();
 }
 
-export async function aiSynthesis(chart: Chart, reading: Reading, stability?: string): Promise<string> {
+export async function aiSynthesis(chart: Chart, reading: Reading, stability?: string, life?: LifeReport): Promise<string> {
   return call(
     [
       {
         role: 'user',
-        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability)}\n\nHãy viết bản luận giải tổng hợp khoảng 1000–1400 chữ, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bạn là người thế nào\n## Công việc và cách kiếm tiền\n## Năm nay: tiền đến từ đâu, dễ hao ở đâu\n## Năm nay: công việc, tình cảm, gia đình\n## Sức khỏe: lời nhắc theo lá số\n## Các tháng tới: tháng nào nên làm gì\n## 10 năm hiện tại\n## Năm việc nên làm ngay\nKhông dùng bảng. Không dùng in đậm.`,
+        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability, life)}\n\nHãy viết bản luận giải tổng hợp khoảng 2000–2800 chữ, xưng "bạn"${chart.name ? ` và gọi tên ${chart.name} ở câu đầu` : ''}, mỗi phần có: nhận định → vì sao (căn cứ trên lá số, giải thích thuật ngữ khi dùng) → biểu hiện đời thường → việc nên làm cụ thể, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bạn là người thế nào\n## Công việc và cách kiếm tiền\n## Năm nay: tiền đến từ đâu, dễ hao ở đâu\n## Năm nay: công việc, tình cảm, gia đình\n## Sức khỏe: lời nhắc theo lá số\n## Các tháng tới: tháng nào nên làm gì\n## 10 năm hiện tại\n## Năm việc nên làm ngay\nKhông dùng bảng. Không dùng in đậm. Không dùng từ tiếng Anh như "net effect".`,
       },
     ],
-    2500,
+    6000,
   );
 }
 

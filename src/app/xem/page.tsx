@@ -48,7 +48,7 @@ export default function QuickView() {
       </div>
     );
 
-  const { chart, reading, sensitivity, patterns, derivation, menhKey } = s.data;
+  const { chart, reading, life, sensitivity, patterns, derivation, menhKey } = s.data;
   const gateKey = JSON.stringify(s.draft.input)
     .split('')
     .reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 7)
@@ -61,6 +61,7 @@ export default function QuickView() {
       patterns={patterns}
       derivation={derivation}
       menhKey={menhKey}
+      life={life}
       blindGate={s.draft.source === 'rectify' ? undefined : { gateKey }}
       isPro={false}
       draft={s.draft}

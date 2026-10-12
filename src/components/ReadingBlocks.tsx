@@ -171,6 +171,38 @@ export function MonthsBlock({ y }: { y: YearReading }) {
         ). "Thuận" nghĩa là có nhiều tín hiệu hỗ trợ rơi vào cung đó; "Làm chắc"
         nghĩa là có tín hiệu vướng mắc — không phải điềm xấu, chỉ là nên chuẩn bị kỹ hơn. Bấm "Vì sao?" để xem cách tính điểm.
       </p>
+      <details className="howto" style={{ margin: '0 0 12px' }} open>
+        <summary>Bảng tra nhanh 12 tháng</summary>
+        <div className="table-scroll">
+          <table className="simple month-table">
+            <thead>
+              <tr>
+                <th>Tháng</th>
+                <th>Dương lịch</th>
+                <th>Nhịp</th>
+                <th>Chủ đề và việc nên làm</th>
+              </tr>
+            </thead>
+            <tbody>
+              {y.months.map((m) => (
+                <tr key={`${m.month}${m.leap ? 'n' : ''}`} className={m.current ? 'is-current' : m.past ? 'is-past' : undefined}>
+                  <td>{m.label.replace('Tháng ', '')}</td>
+                  <td>
+                    {m.from.replace(/\/\d{4}$/, '')}–{m.to.replace(/\/\d{4}$/, '')}
+                  </td>
+                  <td>
+                    <span className={`tone ${TONE[m.tone].cls}`}>{TONE[m.tone].label}</span>
+                  </td>
+                  <td>
+                    {m.focus.replace(/^Tháng (xoay quanh chuyện|thuận cho chuyện) /, '').replace(/ — .*$| nhưng .*$/, '').replace(/\.$/, '')}
+                    {m.todo[0] ? ` — ${m.todo[0].split(':')[0].split(';')[0].replace(/\.$/, '')}` : ''}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
       <div className="month-grid">
         {y.months.map((m) => (
           <MonthCard key={`${m.month}${m.leap ? 'n' : ''}`} m={m} />
@@ -178,6 +210,12 @@ export function MonthsBlock({ y }: { y: YearReading }) {
       </div>
     </div>
   );
+}
+
+function Verdict({ v }: { v?: string }) {
+  if (!v) return null;
+  const cls = v === 'Thuận lợi' ? 'tone-thuan' : v === 'Cần làm chắc' || v === 'Nên ưu tiên' ? 'tone-can' : 'tone-binh';
+  return <span className={`tone ${cls}`}>{v}</span>;
 }
 
 export function YearBody({ y }: { y: YearReading }) {
@@ -190,14 +228,34 @@ export function YearBody({ y }: { y: YearReading }) {
       </div>
 
       {y.story.length > 0 && (
-        <div className="prose story-body" style={{ marginTop: 12 }}>
+        <div className="story-body" style={{ marginTop: 12 }}>
           {y.story.map((t, i) => (
             <p key={i}>{t}</p>
           ))}
         </div>
       )}
 
-      <h4>Tiền bạc năm nay</h4>
+      {y.hoaNotes?.length > 0 && (
+        <>
+          <h4>Bốn sao "đổi màu" trong năm và ý nghĩa với bạn</h4>
+          <ul className="plain-list hoa-notes">
+            {y.hoaNotes.map((h, i) => (
+              <li key={i}>
+                <span aria-hidden="true" className="mark">
+                  {i === 3 ? '−' : '+'}
+                </span>
+                <span>
+                  <b>{h.label}:</b> {h.text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <h4>
+        Tiền bạc năm nay <Verdict v={y.verdicts?.money} />
+      </h4>
       <div className="money-grid">
         <div>
           <b>Tiền đến từ đâu</b>
@@ -231,23 +289,42 @@ export function YearBody({ y }: { y: YearReading }) {
         </div>
       ) : (
         <>
-          <h4>Công việc</h4>
+          <h4>
+            Công việc <Verdict v={y.verdicts?.work} />
+          </h4>
           <List items={y.work} mark="•" />
-          <h4>Tình cảm</h4>
+          <h4>
+            Tình cảm <Verdict v={y.verdicts?.love} />
+          </h4>
           <List items={y.love} mark="•" />
           <h4>Gia đình</h4>
           <List items={y.family} mark="•" />
-          <h4>Sức khỏe</h4>
+          <h4>
+            Sức khỏe <Verdict v={y.verdicts?.health} />
+          </h4>
           <List items={y.health} mark="•" />
-          {y.actions.length > 0 && (
+          {y.advice5?.length ? (
             <div className="actions-box">
-              <b>Việc nên làm trong năm {y.year}</b>
+              <b>5 lời khuyên cho năm {y.canChi}</b>
               <ol>
-                {y.actions.map((a, i) => (
-                  <li key={i}>{a}</li>
+                {y.advice5.map((a, i) => (
+                  <li key={i}>
+                    <b>{a.kind}:</b> {a.text}
+                  </li>
                 ))}
               </ol>
             </div>
+          ) : (
+            y.actions.length > 0 && (
+              <div className="actions-box">
+                <b>Việc nên làm trong năm {y.year}</b>
+                <ol>
+                  {y.actions.map((a, i) => (
+                    <li key={i}>{a}</li>
+                  ))}
+                </ol>
+              </div>
+            )
           )}
           <details className="evidence">
             <summary>Vì sao? Căn cứ trên lá số</summary>

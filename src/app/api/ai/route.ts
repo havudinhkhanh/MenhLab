@@ -17,13 +17,13 @@ export async function POST(req: Request) {
   if (!row) return NextResponse.json({ error: 'Không tìm thấy lá số.' }, { status: 404 });
   if (!row.is_pro) return NextResponse.json({ error: 'Tính năng này dành cho bản Pro.' }, { status: 403 });
 
-  const { chart, fullReading, sensitivity } = computeReport(row.birth_input, row.conventions, true);
+  const { chart, fullReading, fullLife, sensitivity } = computeReport(row.birth_input, row.conventions, true);
   const stability = `${Math.round(sensitivity.stability * 100)}% (${sensitivity.level})`;
 
   try {
     if (action === 'synthesis') {
       if (row.ai_synthesis) return NextResponse.json({ text: row.ai_synthesis });
-      const text = await aiSynthesis(chart, fullReading, stability);
+      const text = await aiSynthesis(chart, fullReading, stability, fullLife);
       await db().from('charts').update({ ai_synthesis: text }).eq('id', row.id);
       return NextResponse.json({ text });
     }

@@ -1308,3 +1308,99 @@ table.simple td {
 .report-grid > * {
   min-width: 0;
 }
+
+/* ---------- Luận giải trọn đời ---------- */
+.portrait-lead {
+  font-family: var(--serif);
+  font-size: 1.12rem;
+}
+.aspects {
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.aspects > div {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 12px;
+}
+.aspects dt {
+  font-weight: 700;
+  color: var(--tu);
+}
+.aspects dd {
+  margin: 0;
+  line-height: 1.6;
+}
+@media (max-width: 640px) {
+  .aspects > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+.levers {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.levers > li {
+  margin: 12px 0 0;
+}
+.levers h4 {
+  margin: 0 0 4px;
+  font-size: 1.08rem;
+}
+.story.blind {
+  border-left: 3px solid var(--son);
+}
+.order li {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.special .rarity {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.special h4 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+.letter {
+  font-family: var(--serif);
+  font-size: 1.08rem;
+  line-height: 1.8;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card);
+}
+.letter-hi {
+  font-weight: 700;
+}
+.stage-current {
+  border: 2px solid var(--tu);
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.month-table td,
+.month-table th {
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+.month-table tr.is-current td {
+  background: var(--tu-soft);
+  font-weight: 600;
+}
+.month-table tr.is-past td {
+  color: var(--muted);
+}
+.hoa-notes li {
+  line-height: 1.6;
+}
