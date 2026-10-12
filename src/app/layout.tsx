@@ -3,6 +3,7 @@ import Link from 'next/link';
 import './globals.css';
 import { config } from '@/lib/config';
 import TermLayer from '@/components/TermLayer';
+import AccountLink from '@/components/AccountLink';
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.siteUrl),
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f5fb' },
+    { media: '(prefers-color-scheme: light)', color: '#1d1a3a' },
     { media: '(prefers-color-scheme: dark)', color: '#14101d' },
   ],
 };
@@ -24,7 +25,7 @@ function Mark() {
     <svg className="logo-mark" viewBox="0 0 24 24" aria-hidden="true">
       <rect x="1" y="1" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" />
       <rect x="7" y="7" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1" opacity=".5" />
-      <path d="M12 8.2l1 2.6 2.8.2-2.2 1.7.8 2.7L12 13.9l-2.4 1.5.8-2.7-2.2-1.7 2.8-.2z" fill="#4b2a7b" />
+      <path d="M12 8.2l1 2.6 2.8.2-2.2 1.7.8 2.7L12 13.9l-2.4 1.5.8-2.7-2.2-1.7 2.8-.2z" fill="#e2b93b" />
     </svg>
   );
 }
@@ -53,8 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/chinh-gio">Tìm giờ sinh</Link>
               <Link href="/nghien-cuu">Nghiên cứu</Link>
               <Link href="/bang-gia">Bảng giá</Link>
-              <Link href="/tim-la-so">Lá số của tôi</Link>
             </nav>
+            <AccountLink />
           </div>
         </header>
         <main>{children}</main>
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/phuong-phap">Phương pháp</Link>
               <Link href="/nghien-cuu">Tử Vi và khoa học</Link>
               <Link href="/sao">14 chính tinh × 12 cung</Link>
+              <Link href="/tai-khoan">Tài khoản</Link>
               <a href={`mailto:${config.owner.email}`}>Liên hệ</a>
             </nav>
             <p>

@@ -216,40 +216,67 @@ export function PrintButton() {
   );
 }
 
-
-
-export function FindCharts() {
-  const [email, setEmail] = useState('');
+export function CopyLink({ path }: { path: string }) {
   const [done, setDone] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError('');
-    try {
-      await post('/api/my-charts', { email });
-      setDone(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (done)
-    return <p className="note">Nếu email này có lá số đã lưu, danh sách link sẽ đến hộp thư trong vài phút. Nhớ kiểm tra mục Spam/Quảng cáo.</p>;
   return (
-    <form onSubmit={submit} className="panel" style={{ maxWidth: 480 }}>
-      <div className="field">
-        <label htmlFor="fe">Email đã dùng khi lưu lá số</label>
-        <input id="fe" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-      </div>
-      {error && <p className="alert">{error}</p>}
-      <button className="btn" type="submit" disabled={busy}>
-        Gửi link lá số về email
+    <button
+      type="button"
+      className="linklike"
+      onClick={async () => {
+        await navigator.clipboard?.writeText(`${window.location.origin}${path}`).catch(() => undefined);
+        setDone(true);
+        setTimeout(() => setDone(false), 2000);
+      }}
+    >
+      {done ? 'Đã sao chép' : 'Sao chép link'}
+    </button>
+  );
+}
+
+export function LogoutButton() {
+  return (
+    <button
+      type="button"
+      className="btn ghost"
+      onClick={async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/';
+      }}
+    >
+      Đăng xuất
+    </button>
+  );
+}
+
+export function DeleteAccount({ count }: { count: number }) {
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (!armed)
+    return (
+      <button type="button" className="btn danger" onClick={() => setArmed(true)}>
+        Xóa tài khoản
       </button>
-    </form>
+    );
+  return (
+    <div className="alert" role="alert">
+      <p style={{ marginTop: 0 }}>
+        Xóa vĩnh viễn {count} lá số gắn với email này, kể cả lá số đã mua Pro. Không khôi phục được.
+      </p>
+      <button
+        type="button"
+        className="btn danger"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          await fetch('/api/account/delete', { method: 'POST' });
+          window.location.href = '/?da-xoa=1';
+        }}
+      >
+        {busy ? 'Đang xóa…' : 'Xóa vĩnh viễn'}
+      </button>{' '}
+      <button type="button" className="btn ghost" onClick={() => setArmed(false)}>
+        Giữ lại
+      </button>
+    </div>
   );
 }

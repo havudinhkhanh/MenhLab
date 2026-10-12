@@ -84,20 +84,6 @@ export function chartReadyEmail(chartId: string, name: string | null) {
   };
 }
 
-export function myChartsEmail(rows: { id: string; display_name: string | null; created_at: string }[]) {
-  const items = rows
-    .map(
-      (r) =>
-        `<li style="margin:8px 0"><a href="${config.siteUrl}/la-so/${r.id}" style="color:#4b2a7b">${esc(r.display_name || 'Lá số không tên')}</a> <span style="color:#6e6585;font-size:13px">— lập ngày ${new Date(r.created_at).toLocaleDateString('vi-VN')}</span></li>`,
-    )
-    .join('');
-  return {
-    subject: 'Các lá số bạn đã lưu',
-    html: layout(`<p>Đây là các lá số gắn với email này:</p><ul>${items}</ul>`, ownerFooter()),
-    text: rows.map((r) => `${r.display_name || 'Lá số'}: ${config.siteUrl}/la-so/${r.id}`).join('\n'),
-  };
-}
-
 export function receiptEmail(chartId: string, amount: number, orderCode: number) {
   const url = `${config.siteUrl}/la-so/${chartId}`;
   return {
@@ -150,5 +136,16 @@ export function dripEmail(
     ),
     text: `${name ? `Chào ${name},` : 'Chào bạn,'}\n\n${intros[step] ?? intros[4]}\n\n${teaser.title}\n${teaser.reveal.join('\n')}\n\n${teaser.locked}\nGói Pro: ${vnd(config.pricePro)}, thanh toán một lần.\n\nXem: ${url}\n\nTừ chối nhận email quảng cáo: ${unsub}\nNgười quảng cáo: ${config.owner.name}, ${config.owner.address}, ${config.owner.email}`,
     unsubscribeUrl: unsub,
+  };
+}
+
+export function loginCodeEmail(code: string, link: string) {
+  return {
+    subject: `Mã đăng nhập MệnhLab: ${code}`,
+    html: layout(
+      `<p>Mã đăng nhập của bạn:</p><p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:8px 0 16px">${code}</p><p>Hoặc bấm nút dưới đây để đăng nhập ngay trên thiết bị này.</p>${button(link, 'Đăng nhập')}<p style="font-size:13px;color:#6e6585">Mã và nút có hiệu lực trong 15 phút, dùng được một lần. Nếu bạn không yêu cầu đăng nhập, cứ bỏ qua email này.</p>`,
+      ownerFooter(),
+    ),
+    text: `Mã đăng nhập MệnhLab: ${code}\nHoặc mở link: ${link}\nHiệu lực 15 phút, dùng một lần.`,
   };
 }

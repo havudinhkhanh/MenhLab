@@ -101,3 +101,16 @@ create table if not exists lab_results (
 create unique index if not exists lab_results_chart_test on lab_results (chart_id, test) where chart_id is not null;
 alter table lab_results enable row level security;
 
+
+-- Đăng nhập bằng mã gửi qua email (không mật khẩu). Chỉ lưu mã đã băm, hết hạn sau 15 phút.
+create table if not exists login_codes (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  email text not null,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  attempts int not null default 0,
+  used_at timestamptz
+);
+create index if not exists login_codes_email_idx on login_codes (email, created_at desc);
+alter table login_codes enable row level security;

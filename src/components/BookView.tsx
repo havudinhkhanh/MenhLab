@@ -47,7 +47,7 @@ export default function BookView({ book, name, line }: { book: Book; name: strin
   return (
     <div className="ai-report">
       <header className="ai-cover">
-        <p className="eyebrow">Bản luận giải trọn đời · MệnhLab</p>
+        <p className="eyebrow">Bản luận giải trọn đời của MệnhLab</p>
         <h1>{name}</h1>
         <p className="muted">{line}</p>
         <p className="small muted no-print">

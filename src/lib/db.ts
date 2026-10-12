@@ -3,12 +3,14 @@ import 'server-only';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createHash } from 'node:crypto';
 import type { BirthInput, Conventions } from './engine/birth';
+import { devDb, devDbEnabled } from './devdb';
 
 let client: SupabaseClient | null = null;
 
-export const dbEnabled = () => !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+export const dbEnabled = () => !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) || devDbEnabled();
 
 export function db(): SupabaseClient {
+  if (devDbEnabled()) return devDb as unknown as SupabaseClient;
   if (!dbEnabled()) throw new Error('Chưa cấu hình SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
   if (!client) {
     client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {

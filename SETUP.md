@@ -138,6 +138,19 @@ Toàn bộ được dựng từ quy tắc Tử Vi và nội dung biên soạn s�
 
 ---
 
+## 6a. Đăng nhập và trang Tài khoản
+
+Đã làm sẵn, không cần cài thêm dịch vụ: đăng nhập bằng email + mã 6 số (gửi qua Resend ở bước 3), không mật khẩu.
+
+1. Chạy lại `supabase/schema.sql` để có bảng `login_codes` (chạy lại nhiều lần không sao).
+2. Trên thanh menu có nút **Đăng nhập** (sau khi đăng nhập đổi thành **Tài khoản**).
+3. Trang `/tai-khoan` liệt kê mọi lá số lưu bằng email đó, mỗi lá số có các link: Mở lá số, Tháng này nên làm gì, Năm nay, Bản luận giải trọn đời (Pro) hoặc Mở khóa Pro, Lá số gốc và cách tính — mỗi link kèm một dòng giải thích. Bên phải là danh sách các trang trên MệnhLab và dùng để làm gì, nút Đăng xuất, Xóa tài khoản.
+4. Khi đang đăng nhập, ô email trong form lập lá số tự điền sẵn, lá số mới tự vào tài khoản.
+
+Bảo vệ: mã chỉ lưu dạng băm, hết hạn 15 phút, tối đa 5 lần nhập sai và 5 lần gửi mã mỗi 15 phút; phiên là cookie httpOnly có chữ ký bằng `APP_SECRET`, hiệu lực 30 ngày.
+
+---
+
 ## 6b. Thử bản Pro trước khi public (không cần trả tiền)
 
 **Cách 1 — nhanh nhất, chỉ cần Vercel:** chỉ cần đặt 2 biến `ADMIN_KEY` và `APP_SECRET` (bước 1) là đủ, chưa cần Supabase hay Resend.
@@ -245,6 +258,8 @@ cp .env.example .env.local   # điền giá trị
 npm run dev                  # mở http://localhost:3000
 npm test                     # kiểm thử engine lá số và luận giải
 ```
+
+Muốn thử đăng nhập, lưu lá số, trang Tài khoản mà chưa có Supabase: đặt `DEV_MEMORY_DB=1` (và không đặt `SUPABASE_URL`). Dữ liệu nằm trong bộ nhớ, mất khi tắt máy chủ; mã đăng nhập hiện ngay trên màn hình vì chưa có máy chủ email. Không bao giờ đặt biến này trên Vercel.
 
 ## 13. Công cụ "Tìm giờ sinh" (`/chinh-gio`)
 

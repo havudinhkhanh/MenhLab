@@ -28,6 +28,8 @@ export const CONSENT_TEXT = {
     'Tôi đồng ý để MệnhLab lưu và xử lý họ tên (hoặc biệt danh), giới tính, ngày giờ và nơi sinh, email của tôi nhằm mục đích duy nhất: lập, lưu và gửi lại lá số Tử Vi cho tôi. Tôi có thể yêu cầu xóa bất cứ lúc nào.',
   marketing:
     'Tôi đồng ý nhận email giới thiệu (có nhãn [QC]) về nội dung lá số của tôi và gói Pro, tối đa 4 email trong khoảng 2 tuần. Tôi có thể hủy nhận bằng một cú nhấp ở cuối mỗi email.',
+  account:
+    'Tôi đồng ý để MệnhLab dùng email của tôi để gửi mã đăng nhập và gom các lá số tôi đã lưu vào một tài khoản. Tôi có thể xóa tài khoản cùng toàn bộ lá số bất cứ lúc nào.',
   research:
     'Tôi đồng ý để phản hồi đúng/sai của tôi về các nhận định (không kèm họ tên, email) được dùng thống kê ẩn danh nhằm đánh giá độ chính xác của hệ thống.',
 };

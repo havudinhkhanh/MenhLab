@@ -13,9 +13,14 @@
   --son: #b0362a;
   --son-soft: #f8e3df;
   --focus: #7b4fc2;
+  --night: #1d1a3a;
+  --night-2: #2a2552;
+  --night-ink: #e9e5f7;
+  --star: #e2b93b;
   --sans: 'Be Vietnam Pro', system-ui, sans-serif;
   --serif: 'Literata', Georgia, serif;
   --r: 6px;
+  --r-l: 14px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -34,6 +39,8 @@
     --son: #ec7a6c;
     --son-soft: #3a1f1d;
     --focus: #b99be4;
+    --night: #0f0c1c;
+    --night-2: #1d1833;
     color-scheme: dark;
   }
 }
@@ -1091,9 +1098,7 @@ table.simple td {
 }
 .toc-title {
   display: block;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 0.85rem;
   color: var(--muted);
   margin-bottom: 8px;
 }
@@ -1237,10 +1242,8 @@ table.simple td {
 }
 .eyebrow {
   margin: 0 0 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--muted);
 }
 .story .about {
@@ -1494,4 +1497,447 @@ table.simple td {
 .book-cta span {
   opacity: 0.9;
   font-size: 0.95rem;
+}
+
+
+/* =====================================================================
+   Nhận diện "đêm xem sao": thanh trên và phần mở đầu màu mực đêm,
+   lá số mẫu như một tờ giấy được thắp sáng lần lượt theo thứ tự đọc cung.
+   ===================================================================== */
+.site-header {
+  background: var(--night);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.site-header .logo {
+  color: #fff;
+}
+.site-header .nav a {
+  color: rgba(233, 229, 247, 0.8);
+}
+.site-header .nav a:hover {
+  color: #fff;
+}
+.nav-account {
+  color: var(--star);
+  border: 1px solid rgba(226, 185, 59, 0.6);
+  border-radius: 999px;
+  padding: 5px 14px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+.nav-account:hover {
+  background: rgba(226, 185, 59, 0.12);
+}
+@media (max-width: 760px) {
+  .site-header .wrap {
+    gap: 8px 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .site-header .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 16px;
+    padding-bottom: 2px;
+  }
+  .nav-account {
+    margin-left: auto;
+  }
+}
+
+.night {
+  background-color: var(--night);
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 78% 14%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 42% 78%, rgba(226, 185, 59, 0.55), transparent 60%),
+    radial-gradient(1px 1px at 88% 66%, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(1px 1px at 30% 48%, rgba(255, 255, 255, 0.3), transparent 60%);
+  color: var(--night-ink);
+}
+.night .hero {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 56px;
+  padding: 64px 16px 72px;
+  align-items: center;
+}
+.night h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5.4vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.night .hero-lede {
+  color: rgba(233, 229, 247, 0.85);
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+.night .hero-copy .term {
+  color: #fff;
+  text-decoration-color: var(--star);
+}
+.night-note {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-left-color: var(--star);
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 28px 0 18px;
+}
+.btn.star {
+  background: var(--star);
+  color: #1d1a3a;
+  padding: 12px 22px;
+}
+.btn.star:hover {
+  background: #ecc95a;
+}
+.btn.on-night {
+  padding: 12px 22px;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+}
+.btn.on-night:hover {
+  border-color: #fff;
+}
+.hero-note {
+  font-size: 0.88rem;
+  color: rgba(233, 229, 247, 0.6);
+  max-width: 44ch;
+}
+.hero-board {
+  margin: 0;
+}
+.hero-board .board {
+  color: var(--ink);
+  border-color: var(--star);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+.hero-board .cell {
+  animation: lit 0.6s ease-out both;
+  animation-delay: calc(var(--ord, 0) * 110ms + 250ms);
+}
+.hero-board .center {
+  animation: lit 0.8s ease-out both;
+  animation-delay: 1.7s;
+}
+@keyframes lit {
+  from {
+    opacity: 0.12;
+    filter: saturate(0);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-board .cell,
+  .hero-board .center {
+    animation: none;
+  }
+}
+@media (max-width: 880px) {
+  .night .hero {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 36px 16px 44px;
+  }
+}
+
+/* Lập lá số: phần giới thiệu bên trái, biểu mẫu 4 bước bên phải */
+.form-section {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  gap: 48px;
+  padding: 64px 0 24px;
+  align-items: start;
+  scroll-margin-top: 12px;
+}
+.form-intro h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 2rem;
+  margin: 0 0 12px;
+}
+.form-intro {
+  position: sticky;
+  top: 24px;
+}
+.what-next {
+  padding-left: 20px;
+  margin: 20px 0;
+}
+.what-next li {
+  margin: 10px 0;
+  padding-left: 4px;
+}
+.what-next li::marker {
+  color: var(--gold);
+  font-weight: 700;
+}
+@media (max-width: 880px) {
+  .form-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-top: 40px;
+  }
+  .form-intro {
+    position: static;
+  }
+}
+.birth-form {
+  border-radius: var(--r-l);
+  padding: 8px 24px 24px;
+  box-shadow: 0 1px 0 var(--line), 0 18px 40px rgba(29, 26, 58, 0.06);
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.02rem;
+  margin: 26px 0 14px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.birth-form > .step:first-child {
+  border-top: 0;
+  margin-top: 14px;
+  padding-top: 0;
+}
+.step span {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--tu);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex: none;
+}
+.principles > div {
+  border-left: 2px solid var(--star);
+  padding-left: 16px;
+}
+.principles h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+}
+
+/* Đăng nhập */
+.linklike {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--tu);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.linklike:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+.login-page {
+  background: var(--night);
+  color: var(--night-ink);
+  margin-bottom: -80px;
+}
+.login-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  gap: 64px;
+  padding: 72px 16px 96px;
+  align-items: center;
+}
+.login-why h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  color: #fff;
+  font-size: clamp(2rem, 4.5vw, 3.1rem);
+  line-height: 1.1;
+}
+.login-why p {
+  color: rgba(233, 229, 247, 0.85);
+  font-size: 1.1rem;
+  max-width: 46ch;
+}
+.login-why ul {
+  list-style: none;
+  padding: 0;
+  margin: 28px 0 0;
+  max-width: 52ch;
+}
+.login-why li {
+  position: relative;
+  padding-left: 26px;
+  margin: 14px 0;
+  color: rgba(233, 229, 247, 0.85);
+}
+.login-why li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: var(--star);
+}
+.login-why b {
+  color: #fff;
+}
+.login-card {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: var(--r-l);
+  padding: 28px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+.login-card h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.code-input {
+  font-size: 1.7rem !important;
+  letter-spacing: 0.45em;
+  text-align: center;
+  font-weight: 700;
+}
+@media (max-width: 880px) {
+  .login-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 16px 64px;
+  }
+}
+
+/* Tài khoản */
+.account-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 44px 0 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+}
+.account-head h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  padding: 22px 24px 16px;
+  margin-bottom: 22px;
+}
+.chart-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+.chart-card-head h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.45rem;
+  margin: 0;
+}
+.chart-card-menh {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  border-left: 3px solid var(--tu);
+  padding-left: 12px;
+  margin: 14px 0;
+}
+.link-list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+}
+.link-list li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.site-header .nav a {
+  white-space: nowrap;
+}
+.chart-card .link-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+@media (max-width: 640px) {
+  .chart-card .link-list {
+    grid-template-columns: 1fr;
+  }
+}
+.link-list a {
+  font-weight: 600;
+  text-decoration: none;
+}
+.link-list a:hover {
+  text-decoration: underline;
+}
+.link-list span {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.card-foot {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin: 4px 0 0;
+}
+.account-side > section {
+  background: var(--paper-2);
+  border-radius: var(--r-l);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.account-side h2 {
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+}
+.account-side .link-list li:first-child {
+  border-top: 0;
+}
+.empty {
+  border: 1px dashed var(--line);
+  border-radius: var(--r-l);
+  padding: 32px;
+  text-align: left;
+  background: var(--card);
+}
+.empty h2 {
+  margin-top: 0;
 }

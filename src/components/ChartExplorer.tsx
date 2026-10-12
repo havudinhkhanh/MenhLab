@@ -65,7 +65,7 @@ function Cell({
       aria-pressed={active}
       aria-label={`Cung ${p.name} tại ${p.branchName}${p.majors.length ? `, chính tinh ${p.majors.map((s) => s.name).join(', ')}` : ', vô chính diệu'}`}
       className={`cell ${active ? 'active' : ''} ${state}`}
-      style={{ gridRow: row, gridColumn: col }}
+      style={{ gridRow: row, gridColumn: col, ['--ord' as string]: (chart.menhBranch - p.branch + 12) % 12 }}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

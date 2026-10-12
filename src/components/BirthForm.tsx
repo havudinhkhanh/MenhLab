@@ -14,7 +14,10 @@ const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i)
 export default function BirthForm({
   onPreview,
   submitLabel,
+  accountEmail,
 }: {
+  /** Email của tài khoản đang đăng nhập: lá số tự lưu vào tài khoản. */
+  accountEmail?: string;
   /** Chế độ xem thử (trang quản trị): bỏ phần email/đồng ý, trả dữ liệu cho trang gọi thay vì chuyển trang. */
   onPreview?: (input: BirthInput, conventions: Conventions) => void | Promise<void>;
   submitLabel?: string;
@@ -40,7 +43,7 @@ export default function BirthForm({
   const [dayChange, setDayChange] = useState<'23h' | '0h'>('23h');
   const [leapRule, setLeapRule] = useState<'tach-15' | 'theo-thang'>('tach-15');
   const [brightness, setBrightness] = useState<'viet' | 'toan-thu'>('viet');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(accountEmail ?? '');
   const [cProcessing, setCProcessing] = useState(false);
   const [cMarketing, setCMarketing] = useState(false);
   const [cResearch, setCResearch] = useState(false);
@@ -130,7 +133,10 @@ export default function BirthForm({
   }
 
   return (
-    <form onSubmit={submit} className="panel" noValidate>
+    <form onSubmit={submit} className="panel birth-form" noValidate>
+      <h3 className="step">
+        <span aria-hidden="true">1</span>Người xem
+      </h3>
       <div className="field">
         <label htmlFor="name">Tên hiển thị trên lá số</label>
         <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Có thể để trống hoặc dùng biệt danh" />
@@ -149,6 +155,9 @@ export default function BirthForm({
         <span className="hint">Tử Vi dùng giới tính sinh học khi sinh để xác định chiều chạy của đại vận (thuận hay nghịch).</span>
       </div>
 
+      <h3 className="step">
+        <span aria-hidden="true">2</span>Sinh khi nào
+      </h3>
       <div className="field">
         <span className="legend" id="c-l">Ngày sinh theo</span>
         <div className="seg" role="radiogroup" aria-labelledby="c-l">
@@ -277,6 +286,9 @@ export default function BirthForm({
         </p>
       )}
 
+      <h3 className="step">
+        <span aria-hidden="true">3</span>Sinh ở đâu
+      </h3>
       <div className="field">
         <label htmlFor="pl">Nơi sinh</label>
         <select id="pl" value={place} onChange={(e) => setPlace(e.target.value)}>
@@ -383,15 +395,29 @@ export default function BirthForm({
       )}
 
       {!onPreview && (
-      <div className="field" style={{ marginTop: 20 }}>
-        <label htmlFor="em">Email (để lưu lá số)</label>
-        <input id="em" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Bỏ trống nếu chỉ muốn xem nhanh" />
-        <span className="hint">
-          {wantsSave
-            ? 'Lá số sẽ được lưu và gửi link riêng về email này.'
-            : 'Bỏ trống email: lá số được tính ngay trên máy bạn, không gửi hay lưu gì lên máy chủ.'}
-        </span>
-      </div>
+        <>
+          <h3 className="step">
+            <span aria-hidden="true">4</span>Lưu lại {accountEmail ? 'vào tài khoản' : '(không bắt buộc)'}
+          </h3>
+          <div className="field">
+            <label htmlFor="em">Email</label>
+            <input
+              id="em"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Bỏ trống nếu chỉ muốn xem nhanh"
+            />
+            <span className="hint">
+              {accountEmail && email.trim().toLowerCase() === accountEmail
+                ? 'Bạn đang đăng nhập: lá số sẽ nằm trong trang Tài khoản, mở lại được bất cứ lúc nào.'
+                : wantsSave
+                  ? 'Lá số sẽ được lưu và gửi link riêng về email này. Đăng nhập bằng email này để xem lại mọi lá số đã lưu.'
+                  : 'Bỏ trống email: lá số được tính ngay trên máy bạn, không gửi hay lưu gì lên máy chủ.'}
+            </span>
+          </div>
+        </>
       )}
 
       {wantsSave && (

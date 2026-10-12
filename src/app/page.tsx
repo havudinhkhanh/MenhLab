@@ -4,6 +4,7 @@ import ChartExplorer from '@/components/ChartExplorer';
 import { buildChart } from '@/lib/engine/chart';
 import { config, vnd } from '@/lib/config';
 import { T } from '@/components/TermLayer';
+import { getSessionEmail } from '@/lib/auth';
 
 // Lá số mẫu của một người giả định, để người mới bấm thử từng thuật ngữ trước khi nhập dữ liệu của mình.
 const SAMPLE = buildChart({
@@ -22,31 +23,57 @@ const SAMPLE = buildChart({
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
+  const email = await getSessionEmail();
   return (
-    <div className="wrap">
-      {sp['da-xoa'] === '1' && (
-        <p className="note" style={{ marginTop: 16 }}>
-          Dữ liệu lá số của bạn đã được xóa vĩnh viễn.
-        </p>
-      )}
-      <section className="hero">
-        <div>
-          <h1>Lá số Tử Vi, đọc hiểu từng chữ.</h1>
-          <p className="hero-lede">
-            Phần lớn người xem lá số không hiểu <T>Tuần</T>, <T>Triệt</T>, <T name="Hóa Kỵ">Hóa Kỵ</T> hay <T name="Hãm">Hãm</T> là gì.{' '}
-            {config.brand} giải thích mọi thuật ngữ, chỉ rõ căn cứ của từng nhận định, và nói thẳng điều Tử Vi không làm được.
-          </p>
-          <div id="lap-la-so" style={{ scrollMarginTop: 16 }}>
-            <BirthForm />
+    <>
+      <section className="night">
+        <div className="wrap hero">
+          <div className="hero-copy">
+            {sp['da-xoa'] === '1' && <p className="note night-note">Dữ liệu của bạn đã được xóa vĩnh viễn.</p>}
+            <h1>Lá số Tử Vi, đọc hiểu từng chữ.</h1>
+            <p className="hero-lede">
+              Phần lớn người xem lá số không hiểu <T>Tuần</T>, <T>Triệt</T>, <T name="Hóa Kỵ">Hóa Kỵ</T> hay <T name="Hãm">Hãm</T> là gì.{' '}
+              {config.brand} giải thích mọi thuật ngữ, chỉ rõ căn cứ của từng nhận định, và nói thẳng điều Tử Vi không làm được.
+            </p>
+            <div className="hero-actions">
+              <a className="btn star" href="#lap-la-so">
+                Lập lá số của bạn
+              </a>
+              <Link className="btn on-night" href={email ? '/tai-khoan' : '/dang-nhap'}>
+                {email ? 'Xem lá số đã lưu' : 'Đăng nhập để xem lá số đã lưu'}
+              </Link>
+            </div>
+            <p className="hero-note">Lá số bên cạnh là của một người giả định. Bấm thử vào tên sao, chữ (M) hay (H), dấu Tuần, Triệt màu đỏ.</p>
           </div>
-        </div>
-        <div>
-          <ChartExplorer chart={SAMPLE} compact />
-          <p className="hero-chart-caption">
-            Lá số mẫu của một người giả định. Bấm thử vào bất kỳ chữ nào — tên sao, chữ (M) hay (H) cạnh sao, dấu Tuần/Triệt màu đỏ.
-          </p>
+          <figure className="hero-board">
+            <ChartExplorer chart={SAMPLE} compact />
+          </figure>
         </div>
       </section>
+
+      <div className="wrap">
+        <section id="lap-la-so" className="form-section">
+          <div className="form-intro">
+            <h2>Lập lá số</h2>
+            <p>Bốn bước, khoảng một phút. Bạn cần ngày sinh, giờ sinh (nếu biết) và nơi sinh.</p>
+            <ol className="what-next">
+              <li>
+                <b>Thấy ngay lá số</b> đủ 12 cung và phần đọc nhanh, miễn phí.
+              </li>
+              <li>
+                <b>Đọc phần tính cách</b> đầy đủ, có căn cứ cho từng nhận định.
+              </li>
+              <li>
+                <b>Nếu muốn đọc sâu</b>, mở bản Pro {vnd(config.pricePro)} một lần: 12 cung, năm nay, từng tháng, các chặng 10 năm và bản luận giải
+                trọn đời.
+              </li>
+            </ol>
+            <p className="small muted">
+              Không nhập email thì lá số chỉ được tính trên máy bạn, không lưu gì. Nhập email để lưu, rồi đăng nhập bằng email đó để xem lại.
+            </p>
+          </div>
+          <BirthForm accountEmail={email ?? undefined} />
+        </section>
 
       <section>
         <h2>Khác gì những trang lá số khác</h2>
@@ -85,6 +112,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           hoặc đọc <Link href="/phuong-phap">phương pháp</Link>.
         </p>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

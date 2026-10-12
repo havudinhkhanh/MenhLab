@@ -69,10 +69,17 @@ export default function Privacy() {
           không lưu email gốc trong nhật ký đồng ý.
         </p>
 
+        <h2>Đăng nhập và tài khoản</h2>
+        <p>
+          Tài khoản chỉ là email của bạn, không có mật khẩu. Khi đăng nhập, chúng tôi gửi một mã 6 số (chỉ lưu bản đã mã hóa, hết hạn sau 15
+          phút, dùng một lần) và ghi lại sự đồng ý của bạn. Sau khi đăng nhập, trình duyệt giữ một cookie phiên có chữ ký trong 30 ngày để trang
+          Tài khoản hiện các lá số đã lưu bằng email đó. Cookie này không dùng để theo dõi hay quảng cáo.
+        </p>
+
         <h2>Quyền của bạn</h2>
         <ul>
           <li>
-            <b>Xóa dữ liệu:</b> mở lá số → "Xóa dữ liệu của tôi". Lá số, email, phản hồi bị xóa ngay. Đơn hàng chỉ còn mã đơn và số tiền
+            <b>Xóa dữ liệu:</b> mở lá số → "Xóa dữ liệu của tôi", hoặc vào Tài khoản → "Xóa tài khoản" để xóa mọi lá số cùng lúc. Lá số, email, phản hồi bị xóa ngay. Đơn hàng chỉ còn mã đơn và số tiền
             phục vụ kế toán.
           </li>
           <li>

@@ -200,7 +200,7 @@ function ReportBody(p: ReportProps) {
           <section id="doc-nhanh" className="section">
             {isPro && chartId && (
               <a className="book-cta no-print" href={`/la-so/${chartId}/luan-giai`}>
-                <b>Bản luận giải trọn đời →</b>
+                <b>Bản luận giải trọn đời</b>
                 <span>Khoảng 14.000 chữ viết riêng cho lá số này, đọc như một cuốn sách: 12 khía cạnh, bức tranh liên cung, các giai đoạn đời, từng tháng năm nay, tổng kết và lời nhắn. In hoặc lưu PDF được.</span>
               </a>
             )}
