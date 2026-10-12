@@ -14,7 +14,8 @@ Quy tắc bắt buộc:
 1. Chỉ dựa vào dữ kiện lá số và các nhận định có dẫn chứng được cung cấp. Không thêm sao, cách cục hay quy tắc không có trong dữ liệu.
 2. Mỗi nhận định quan trọng kèm căn cứ trong ngoặc, ví dụ: (Thiên Cơ Vượng tại Quan Lộc).
 3. Dùng ngôn ngữ xu hướng: "thiên hướng", "dễ", "có thể". Không bao giờ nói "chắc chắn", "định mệnh".
-4. Tuyệt đối không dự đoán bệnh tật, tai nạn, tử vong, ly hôn, phá sản, sinh con, ngày giờ cụ thể của sự kiện. Không tư vấn y tế, pháp lý, đầu tư cụ thể; nếu được hỏi, nói rõ cần hỏi chuyên gia.
+4. Không chẩn đoán bệnh, không dự đoán tai nạn, tử vong, ly hôn, phá sản, ngày giờ cụ thể của sự kiện. Về sức khỏe: được nêu bộ phận cơ thể mà sách Tử Vi gắn với sao (đã có trong dữ liệu) như một lời nhắc, kèm thói quen nên giữ và khuyên khám định kỳ — không nói "bạn sẽ bị bệnh X". Không khuyên mua bán chứng khoán, tài sản cụ thể; nếu được hỏi, nói rõ cần hỏi chuyên gia.
+9. Viết cụ thể, tránh chung chung: nói rõ tiền đến từ đâu, dễ hao vì đâu, nên làm gì — dựa đúng vào các mục tien_bac, cong_viec, suc_khoe trong dữ liệu. Câu ngắn, từ ngữ đời thường, không dùng thuật ngữ khi không cần.
 5. Nhắc nhẹ một lần rằng Tử Vi là hệ thống văn hóa để tự suy ngẫm, chưa được khoa học kiểm chứng về khả năng dự đoán.
 6. Biến mỗi điểm "cần để ý" thành một gợi ý hành động cụ thể, tích cực.
 7. Viết tiếng Việt tự nhiên, ấm áp, dễ hiểu cho người chưa biết thuật ngữ; giải thích thuật ngữ khi dùng lần đầu.
@@ -37,7 +38,18 @@ function facts(chart: Chart, reading: Reading, stability?: string) {
         dan_chung: p.evidence,
       })),
       dai_van: reading.daiVan.map((d) => ({ tuoi: d.range, cung: d.palace, hien_tai: d.current, ghi_chu: d.notes })),
-      luu_nien: reading.years.map((y) => ({ nam: y.year, can_chi: y.canChi, nhan_dinh: y.paragraphs })),
+      luu_nien: reading.years.map((y) => ({
+        nam: y.year,
+        can_chi: y.canChi,
+        tom_tat: y.summary,
+        tien_bac: y.money,
+        cong_viec: y.work,
+        tinh_cam: y.love,
+        gia_dinh: y.family,
+        suc_khoe: y.health,
+        viec_nen_lam: y.actions,
+        can_cu: y.evidence,
+      })),
       tuoi_mu_hien_tai: reading.currentAge,
     },
     null,
@@ -76,7 +88,7 @@ export async function aiSynthesis(chart: Chart, reading: Reading, stability?: st
     [
       {
         role: 'user',
-        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability)}\n\nHãy viết bản luận giải tổng hợp khoảng 900–1200 chữ, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bức chân dung tổng quát\n## Công việc và tiền bạc\n## Các mối quan hệ\n## Đời sống tinh thần\n## Giai đoạn hiện tại (đại vận và năm nay)\n## Ba gợi ý hành động\nKhông dùng bảng. Không dùng in đậm.`,
+        content: `Dữ liệu lá số (JSON):\n${facts(chart, reading, stability)}\n\nHãy viết bản luận giải tổng hợp khoảng 1000–1400 chữ, gồm các phần có tiêu đề (dòng bắt đầu bằng "## "):\n## Bạn là người thế nào\n## Công việc và cách kiếm tiền\n## Năm nay: tiền đến từ đâu, dễ hao ở đâu\n## Năm nay: công việc, tình cảm, gia đình\n## Sức khỏe: lời nhắc theo lá số\n## 10 năm hiện tại\n## Năm việc nên làm ngay\nKhông dùng bảng. Không dùng in đậm.`,
       },
     ],
     2500,

@@ -9,6 +9,7 @@ import type { Chart, Palace, Star } from '@/lib/engine/chart';
 import type { PalaceReading } from '@/lib/reading';
 import { CANH_GIO } from '@/lib/engine/canchi';
 import Rating from './Rating';
+import { PalaceBody } from './ReadingBlocks';
 
 export type PalaceView = PalaceReading & { locked?: boolean };
 
@@ -273,11 +274,7 @@ export default function ChartExplorer({
               </div>
             ) : (
               <>
-                <div className="prose">
-                  {r.paragraphs.map((t, i) => (
-                    <p key={i}>{t}</p>
-                  ))}
-                </div>
+                <PalaceBody r={r} />
                 <div className="balance">
                   <span>
                     Hỗ trợ {r.support}
@@ -291,14 +288,6 @@ export default function ChartExplorer({
                     cách đếm
                   </button>
                 </div>
-                <details className="evidence">
-                  <summary>Vì sao? Căn cứ của nhận định</summary>
-                  <ul>
-                    {r.evidence.map((e, i) => (
-                      <li key={i}>{e}</li>
-                    ))}
-                  </ul>
-                </details>
                 <p className="small" style={{ marginTop: 12 }}>
                   <b>Tự kiểm chứng:</b> {r.questions.join(' ')}
                 </p>

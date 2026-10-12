@@ -19,14 +19,36 @@ import {
   type Star,
 } from './engine/chart';
 import { HOA_ORDER, TU_HOA } from './engine/names';
-import { DOMAIN_LABEL, PALACES } from '@/content/palaces';
-import { HOA_INFO, MAJOR, MINOR } from '@/content/stars';
+import { yearCanChi } from './engine/canchi';
+import { DOMAIN_LABEL, PALACES, type DomainKey } from '@/content/palaces';
+import {
+  BAD_STAR_HEALTH,
+  DOMAIN_CAUTION_ADVICE,
+  STAR_BODY,
+  FOCUS,
+  HOA_PLAIN,
+  MINOR_PLAIN,
+  MONEY_LEAK,
+  MONEY_SOURCE,
+  MONEY_TODO_LEAK,
+  MONEY_TODO_SOURCE,
+  STAR_ADVICE,
+  STAR_DOMAIN_EXTRA,
+} from '@/content/plain';
+import { MAJOR, MINOR } from '@/content/stars';
 
 export interface PalaceReading {
   branch: number;
   palace: string;
   isBody: boolean;
+  /** Một câu dễ hiểu: "Thiên Cơ — người của kế hoạch" kiểu tiêu đề. */
   headline: string;
+  /** Tóm lại bằng lời thường (1–3 câu). */
+  summary: string;
+  strengths: string[];
+  cautions: string[];
+  advice: string[];
+  /** Bản gộp văn bản (dùng cho email, AI). */
   paragraphs: string[];
   evidence: string[];
   support: number;
@@ -50,6 +72,7 @@ export interface DaiVanReading {
   summary: string;
   hoa: { hoa: Hoa; star: string; landsIn: string }[];
   notes: string[];
+  evidence: string[];
 }
 
 export interface YearReading {
@@ -60,7 +83,17 @@ export interface YearReading {
   tieuHan: string;
   daiVan?: string;
   hoa: { hoa: Hoa; star: string; landsIn: string }[];
+  summary: string[];
+  money: { sources: string[]; leaks: string[]; todo: string[] };
+  work: string[];
+  love: string[];
+  family: string[];
+  health: string[];
+  actions: string[];
+  evidence: string[];
+  /** Bản gộp văn bản (dùng cho email, AI). */
   paragraphs: string[];
+  locked?: boolean;
 }
 
 export interface Reading {
@@ -101,6 +134,10 @@ export const COMBOS: Record<string, string> = {
 
 const ofKind = (p: Palace) => [...p.majors, ...p.goodStars, ...p.badStars, ...p.others];
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const mod12 = (n: number) => ((n % 12) + 12) % 12;
+const uniq = (xs: string[]) => [...new Set(xs.filter(Boolean))];
+const dot = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
 
 function where(chart: Chart, starName: string): Palace | undefined {
   return chart.palaces.find((p) => ofKind(p).some((s) => s.name === starName));
@@ -117,84 +154,85 @@ function relLabel(chart: Chart, from: number, to: number): string {
   return `tam hợp từ ${name}`;
 }
 
+/** Ý nghĩa của một chính tinh trong một lĩnh vực, bằng lời thường. */
+export function starInDomain(star: string, domain: DomainKey): string {
+  const m = MAJOR[star];
+  return m?.domains[domain] ?? STAR_DOMAIN_EXTRA[star]?.[domain] ?? (m ? `Mang sắc thái ${lower(m.short)}` : '');
+}
+
 export function readPalace(chart: Chart, branch: number): PalaceReading {
   const p = chart.palaces[branch];
   const info = PALACES[p.name];
   const domain = info.domain;
   const tp = tamPhuong(branch);
-  const paragraphs: string[] = [];
   const evidence: string[] = [];
+  const strengths: string[] = [];
+  const cautions: string[] = [];
+  const advice: string[] = [];
 
   let majors = p.majors;
   let borrowed = false;
   if (!majors.length) {
     majors = chart.palaces[tp.opposite].majors;
     borrowed = true;
-    paragraphs.push(
-      `Cung ${p.name} không có chính tinh (vô chính diệu), nên mượn chính tinh của cung đối diện là ${chart.palaces[tp.opposite].name}. Lĩnh vực này của bạn linh hoạt và chịu ảnh hưởng nhiều từ hoàn cảnh.`,
-    );
     evidence.push(`Vô chính diệu tại ${p.branchName} → mượn ${majors.map((s) => s.name).join(', ') || 'không có'} từ ${chart.palaces[tp.opposite].branchName}`);
   }
 
+  const brightTraits: string[] = [];
+  // Ý nghĩa chính
+  const meanings = majors.map((s) => starInDomain(s.name, domain)).filter(Boolean);
   for (const s of majors) {
-    const m = MAJOR[s.name];
-    if (!m) continue;
-    const domainText = m.domains[domain] ?? `Trong lĩnh vực ${DOMAIN_LABEL[domain]}, ${s.name} mang sắc thái: ${lower(m.short)}`;
-    let line = `${s.name}${borrowed ? ' (mượn)' : ''}: ${domainText}`;
-    if (s.brightness && !borrowed) {
-      if (s.brightness.score >= 2) line += ` Sao ở thế ${s.brightness.name} nên mặt mạnh — ${lower(m.strengths[0])} — dễ phát huy.`;
-      else if (s.brightness.score <= -1)
-        line += ` Sao ở thế ${s.brightness.name} nên cần để ý mặt ${lower(m.watch[0])}.`;
-    }
-    paragraphs.push(line);
     evidence.push(`${s.name}${s.brightness ? ` (${s.brightness.name})` : ''} ${borrowed ? 'chiếu từ đối cung' : `tọa ${p.branchName}`}`);
+    const m = MAJOR[s.name];
+    if (!m || borrowed || !s.brightness) continue;
+    if (s.brightness.score >= 2) brightTraits.push(...m.strengths.map(lower));
+    else if (s.brightness.score <= -1) cautions.push(`Dễ vấp ở: ${m.watch.map(lower).join(', ')}.`);
   }
-
+  if (brightTraits.length) strengths.push(`Điểm mạnh dễ phát huy: ${uniq(brightTraits).join(', ')}.`);
   if (majors.length === 2) {
-    const key1 = `${majors[0].name}+${majors[1].name}`;
-    const key2 = `${majors[1].name}+${majors[0].name}`;
-    const combo = COMBOS[key1] ?? COMBOS[key2];
-    if (combo) {
-      paragraphs.push(combo);
+    const combo = COMBOS[`${majors[0].name}+${majors[1].name}`] ?? COMBOS[`${majors[1].name}+${majors[0].name}`];
+    const comboText = combo ? combo.split(': ').slice(1).join(': ') || combo : '';
+    if (combo && comboText.length > 30) {
+      strengths.push(dot(upper(comboText)));
       evidence.push(`Bộ sao ${majors[0].name} – ${majors[1].name}`);
     }
   }
 
-  // Tứ Hóa trong bản cung
-  for (const s of ofKind(p)) {
-    const h = hoaOf(chart, s);
-    if (h) {
-      paragraphs.push(`${s.name} hóa ${h}: ${lower(HOA_INFO[h].short.replace(/^Hóa \S+: /, ''))} Điều này rơi vào lĩnh vực ${DOMAIN_LABEL[domain]}.`);
-      evidence.push(`Hóa ${h} (năm sinh) trên ${s.name} tại ${p.name}`);
-    }
-  }
-
-  // Cát/sát trong tam phương tứ chính
+  // Phụ tinh và Tứ Hóa trong tam phương tứ chính
   let support = 0;
   let challenge = 0;
-  const good: string[] = [];
-  const bad: string[] = [];
+  const goodTxt: string[] = [];
+  const badTxt: string[] = [];
+  const goodEv: string[] = [];
+  const badEv: string[] = [];
   for (const b of [tp.self, tp.opposite, ...tp.trine]) {
     const w = b === tp.self ? 1 : 0.5;
     const pal = chart.palaces[b];
-    for (const s of [...pal.goodStars]) {
-      if (s.kind === 'ma') continue;
-      support += w;
-      good.push(`${s.name} (${relLabel(chart, b, branch)})`);
-    }
-    for (const s of pal.badStars) {
-      challenge += w;
-      bad.push(`${s.name} (${relLabel(chart, b, branch)})`);
+    for (const s of [...pal.goodStars, ...pal.badStars]) {
+      const pl = MINOR_PLAIN[s.name];
+      if (!pl) continue;
+      if (pl.good) {
+        support += w;
+        goodEv.push(`${s.name} (${relLabel(chart, b, branch)})`);
+        if (w === 1 || b === tp.opposite) goodTxt.push(pl.text);
+      } else {
+        challenge += w;
+        badEv.push(`${s.name} (${relLabel(chart, b, branch)})`);
+        if (w === 1 || b === tp.opposite) badTxt.push(pl.text);
+      }
     }
     for (const s of ofKind(pal)) {
       const h = hoaOf(chart, s);
       if (!h) continue;
+      const hp = HOA_PLAIN[h];
       if (h === 'Kỵ') {
         challenge += w;
-        if (b !== branch) bad.push(`Hóa Kỵ trên ${s.name} (${relLabel(chart, b, branch)})`);
+        badEv.push(`Hóa Kỵ trên ${s.name} (${relLabel(chart, b, branch)})`);
+        if (w === 1) badTxt.push(hp.text);
       } else {
         support += w;
-        if (b !== branch) good.push(`Hóa ${h} trên ${s.name} (${relLabel(chart, b, branch)})`);
+        goodEv.push(`Hóa ${h} trên ${s.name} (${relLabel(chart, b, branch)})`);
+        if (w === 1 || b === tp.opposite) goodTxt.push(hp.text);
       }
     }
     if (b === tp.self) {
@@ -204,53 +242,69 @@ export function readPalace(chart: Chart, branch: number): PalaceReading {
       }
     }
   }
-  if (good.length) {
-    paragraphs.push(`Yếu tố hỗ trợ trong tam phương tứ chính: ${good.join(', ')}.`);
-    evidence.push(`Cát tinh: ${good.join('; ')}`);
-  }
-  if (bad.length) {
-    paragraphs.push(
-      `Yếu tố thử thách: ${bad.join(', ')}. Đây là nơi dễ có áp lực hoặc va chạm — cũng là nơi tạo sức bật nếu bạn chủ động.`,
-    );
-    evidence.push(`Sát tinh / Hóa Kỵ: ${bad.join('; ')}`);
-  }
+  for (const t of uniq(goodTxt).slice(0, 4)) strengths.push(dot(upper(t)));
+  for (const t of uniq(badTxt).slice(0, 4)) cautions.push(dot(upper(t)));
+  if (goodEv.length) evidence.push(`Cát tinh, Hóa tốt: ${goodEv.join('; ')}`);
+  if (badEv.length) evidence.push(`Sát tinh, Hóa Kỵ: ${badEv.join('; ')}`);
 
   if (p.tuan || p.triet) {
     const which = [p.tuan && 'Tuần', p.triet && 'Triệt'].filter(Boolean).join(' và ');
-    paragraphs.push(
-      `Cung này có ${which}: tác động của các sao bị giảm hoặc đổi chiều${p.triet ? ' (Triệt thường rõ ở nửa đầu đời)' : ''}. Nói cách khác, cả điều thuận lẫn điều khó ở đây đều "nhẹ" hơn bề ngoài.`,
+    cautions.push(
+      `Cả điều thuận lẫn điều khó ở lĩnh vực này đều "nhẹ" hơn bề ngoài — kết quả thường đến chậm hơn kỳ vọng${p.triet ? ', rõ nhất trước khoảng 30 tuổi' : ''}.`,
     );
     evidence.push(`${which} án ngữ ${p.branchName}`);
   }
+  if (['Tràng Sinh', 'Lâm Quan', 'Đế Vượng'].includes(p.trangSinh)) evidence.push(`Vòng Tràng Sinh: ${p.trangSinh} (sinh khí mạnh)`);
+  else if (['Tuyệt', 'Tử', 'Mộ', 'Bệnh'].includes(p.trangSinh)) evidence.push(`Vòng Tràng Sinh: ${p.trangSinh} (sinh khí trầm)`);
 
-  if (['Tràng Sinh', 'Lâm Quan', 'Đế Vượng'].includes(p.trangSinh)) {
-    evidence.push(`Vòng Tràng Sinh: ${p.trangSinh} (sinh khí mạnh)`);
-  } else if (['Tuyệt', 'Tử', 'Mộ', 'Bệnh'].includes(p.trangSinh)) {
-    evidence.push(`Vòng Tràng Sinh: ${p.trangSinh} (sinh khí trầm)`);
+  // Lời khuyên
+  if (majors[0] && STAR_ADVICE[majors[0].name]) advice.push(STAR_ADVICE[majors[0].name]);
+  const net = support - challenge;
+  if (net <= -1 && DOMAIN_CAUTION_ADVICE[domain]) advice.push(DOMAIN_CAUTION_ADVICE[domain]!);
+  if (domain === 'tai' && p.badStars.some((s) => s.name === 'Địa Không' || s.name === 'Địa Kiếp')) {
+    advice.push('Tránh đầu cơ, lướt sóng và vay tiền để đầu tư.');
   }
+  if (domain === 'tat') {
+    for (const s of majors.slice(0, 2)) {
+      const b = STAR_BODY[s.name];
+      if (b) cautions.push(`Sách Tử Vi gắn sao ${s.name} với ${b.organs} — đây là quan niệm truyền thống, không phải chẩn đoán. Lời nhắc: ${b.habit}.`);
+    }
+  }
+  if (domain === 'tat') advice.push('Khám sức khỏe tổng quát mỗi năm một lần — đó là cách duy nhất biết chắc cơ thể bạn đang ra sao.');
 
+  // Tóm lại
+  const tone =
+    net >= 1.5
+      ? 'Nhìn chung đây là mặt thuận lợi của bạn.'
+      : net <= -1.5
+        ? 'Đây là mặt bạn gặp nhiều thử thách hơn — cũng là nơi bạn trưởng thành nhiều nhất nếu chủ động.'
+        : 'Lĩnh vực này có cả thuận lợi lẫn thử thách.';
+  let summary = `${borrowed ? 'Lĩnh vực này khá linh hoạt, dễ thay đổi theo hoàn cảnh. ' : ''}${dot(meanings[0] ?? '')} ${tone}`;
+  if (meanings[1]) strengths.unshift(dot(meanings[1]));
   if (p.isBody && p.name !== 'Mệnh') {
-    paragraphs.push(
-      `Cung Thân cũng nằm ở đây (Thân cư ${p.name}): lĩnh vực ${DOMAIN_LABEL[domain]} là nơi bạn có xu hướng đặt nhiều tâm sức, nhất là từ khoảng tuổi 30 trở đi.`,
-    );
+    summary += ` Cung Thân nằm ở đây: từ khoảng 30 tuổi, bạn đặt nhiều tâm sức vào ${DOMAIN_LABEL[domain]}.`;
     evidence.push(`Thân cư ${p.name}`);
   }
 
   const lead = majors[0] ? MAJOR[majors[0].name] : undefined;
   const headline = majors.length
-    ? `${majors.map((s) => s.name).join(' – ')}${borrowed ? ' (mượn đối cung)' : ''}: ${lead ? lower(lead.short) : ''}`
-    : 'Không có chính tinh ở cả bản cung và đối cung — lĩnh vực rất linh hoạt.';
-
+    ? `${majors.map((s) => s.name).join(' – ')}${borrowed ? ' (mượn đối cung)' : ''} — ${lead ? lower(lead.nickname.split(' — ')[1] ?? lead.nickname) : ''}`
+    : 'Không có chính tinh — lĩnh vực rất linh hoạt';
   const teaser = majors.length
     ? `Cung ${p.name} của bạn có ${majors.map((s) => s.name).join(' và ')}${borrowed ? ' (mượn từ đối cung)' : ''} — ${lead ? lower(lead.nickname) : ''}.`
     : `Cung ${p.name} của bạn vô chính diệu.`;
 
+  const adv = uniq(advice).slice(0, 3);
   return {
     branch,
     palace: p.name,
     isBody: p.isBody,
     headline,
-    paragraphs,
+    summary,
+    strengths: uniq(strengths),
+    cautions: uniq(cautions),
+    advice: adv,
+    paragraphs: [summary, ...uniq(strengths), ...uniq(cautions), ...adv.map((a) => `Nên làm: ${a}`)],
     evidence,
     support,
     challenge,
@@ -265,6 +319,147 @@ function hoaLanding(chart: Chart, stem: number) {
     const pal = where(chart, star);
     return { hoa: h, star, landsIn: pal ? pal.name : '—' };
   });
+}
+
+/** Vị trí Lộc Tồn theo Can (Giáp Dần, Ất Mão, Bính Mậu Tỵ, Đinh Kỷ Ngọ, Canh Thân, Tân Dậu, Nhâm Hợi, Quý Tý). */
+const LOC_TON = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
+
+export function readYear(chart: Chart, y: number): YearReading {
+  const l = yearlyLuck(chart, y);
+  const pal = (b: number) => chart.palaces[mod12(b)];
+  const TT = pal(l.thaiTueBranch).name;
+  const TH = pal(l.tieuHan).name;
+  const hoa = HOA_ORDER.map((h) => ({ hoa: h, star: l.hoa[h], landsIn: where(chart, l.hoa[h])?.name ?? '—' }));
+  const at = (h: Hoa) => hoa.find((x) => x.hoa === h)!.landsIn;
+  const L = at('Lộc');
+  const Q = at('Quyền');
+  const K = at('Khoa');
+  const KY = at('Kỵ');
+  const lt = LOC_TON[yearCanChi(y).can];
+  const LT = pal(lt).name;
+  const KINH = pal(lt + 1).name;
+  const DA = pal(lt - 1).name;
+  const dv = l.daiVan;
+  const dvHoa = dv ? hoaLanding(chart, dv.stem) : [];
+  const dvLoc = dvHoa.find((x) => x.hoa === 'Lộc')?.landsIn;
+  const dvKy = dvHoa.find((x) => x.hoa === 'Kỵ')?.landsIn;
+  const active = (name: string) => TT === name || TH === name;
+  const dl = (name: string) => DOMAIN_LABEL[PALACES[name]?.domain ?? 'menh'];
+
+  // Tóm tắt
+  const summary = [`Trọng tâm của năm: ${lower(FOCUS[TT])}`];
+  if (TH !== TT) summary.push(`Bản thân bạn sẽ để tâm nhiều tới chuyện ${dl(TH)}.`);
+  summary.push(`Thuận lợi nhất ở chuyện ${dl(L)}; cần cẩn thận ở chuyện ${dl(KY)}.`);
+
+  // Tiền bạc
+  const sources = [`Nguồn chính: ${MONEY_SOURCE[L]}.`];
+  if (LT !== L) sources.push(`Nguồn phụ: ${MONEY_SOURCE[LT]}.`);
+  if (active('Tài Bạch')) sources.push('Tiền bạc là chủ đề lớn của năm — thu và chi đều nhiều hơn bình thường.');
+  if (dvLoc && dvLoc !== L && dvLoc !== LT) sources.push(`Bối cảnh 10 năm hiện tại: tiền cũng dễ đến từ ${MONEY_SOURCE[dvLoc]}.`);
+  const leaks = [`Dễ hao vì ${MONEY_LEAK[KY]}.`];
+  if (KINH === 'Tài Bạch' || DA === 'Tài Bạch') leaks.push('Dễ có chi phí phát sinh hoặc tranh giành quyền lợi về tiền.');
+  const tai = chart.palaces.find((p) => p.name === 'Tài Bạch')!;
+  if (active('Tài Bạch') && tai.badStars.some((s) => s.name === 'Địa Không' || s.name === 'Địa Kiếp')) {
+    leaks.push('Không đầu cơ, không vay để đầu tư — lá số có dấu hiệu dễ hao khi liều.');
+  }
+  if (dvKy && dvKy !== KY) leaks.push(`Bối cảnh 10 năm hiện tại: cũng dễ hao vì ${MONEY_LEAK[dvKy]}.`);
+  const todo = uniq([MONEY_TODO_SOURCE[L], MONEY_TODO_LEAK[KY], LT !== L ? MONEY_TODO_SOURCE[LT] : '']).slice(0, 3);
+
+  // Công việc
+  const work: string[] = [];
+  if (active('Quan Lộc')) work.push('Công việc là chuyện lớn của năm: dễ có thay đổi vị trí, nhiệm vụ mới hoặc áp lực tăng.');
+  if (L === 'Quan Lộc') work.push('Công việc mang lại nguồn lợi rõ — năm tốt để đề xuất tăng lương hoặc nhận dự án lớn.');
+  if (Q === 'Quan Lộc') work.push('Có cơ hội nắm thêm quyền, trách nhiệm — mạnh dạn nhận.');
+  if (K === 'Quan Lộc') work.push('Dễ được ghi nhận; năm tốt để học thêm, lấy chứng chỉ.');
+  if (KY === 'Quan Lộc') work.push('Áp lực, dễ hiểu lầm với cấp trên hoặc đồng nghiệp — giữ trao đổi bằng văn bản, đừng quyết định nghỉ việc lúc nóng giận.');
+  if (active('Thiên Di') || L === 'Thiên Di') work.push('Cơ hội đến từ bên ngoài: đi công tác, khách hàng mới, đổi môi trường.');
+  if (KY === 'Nô Bộc') work.push('Cẩn thận chuyện người: đồng nghiệp, cấp dưới, đối tác — kiểm tra kỹ trước khi tin giao việc lớn.');
+  if (!work.length) work.push('Công việc không phải điểm nhấn lớn của năm theo lá số — hợp để làm tốt việc đang có và học thêm kỹ năng.');
+
+  // Tình cảm
+  const love: string[] = [];
+  if (active('Phu Thê')) love.push('Tình cảm, hôn nhân được để tâm nhiều: người độc thân dễ có người để ý; người đã có đôi nên dành thời gian cho nhau.');
+  if (L === 'Phu Thê' || K === 'Phu Thê') love.push('Quan hệ đôi lứa thuận; hợp tác làm ăn với người bạn đời dễ suôn sẻ.');
+  if (KY === 'Phu Thê') love.push('Dễ hiểu lầm, bất đồng — nói chuyện thẳng thắn sớm, đừng để chuyện nhỏ thành lớn.');
+  if (!love.length) love.push('Tình cảm không có biến động lớn theo lá số — giữ nhịp quan tâm đều đặn là đủ.');
+
+  // Gia đình
+  const family: string[] = [];
+  if (active('Điền Trạch') || L === 'Điền Trạch') family.push('Chuyện nhà cửa nổi lên: sửa nhà, chuyển nhà, mua bán — thuận nếu chuẩn bị kỹ.');
+  if (KY === 'Điền Trạch') family.push('Nhà cửa dễ phát sinh việc cần sửa hoặc giấy tờ cần làm rõ.');
+  if (active('Phụ Mẫu')) family.push('Dành thêm thời gian cho cha mẹ; để ý sức khỏe của các cụ.');
+  if (KY === 'Phụ Mẫu') family.push('Có thể phải lo nhiều cho cha mẹ hoặc giấy tờ hành chính.');
+  if (active('Tử Tức') || L === 'Tử Tức') family.push('Con cái là mối quan tâm lớn: học hành, chuyển cấp hoặc có tin vui.');
+  if (KY === 'Tử Tức') family.push('Con cái cần bạn để tâm và trò chuyện nhiều hơn.');
+  if (!family.length) family.push('Gia đình không có điểm đặc biệt theo lá số.');
+
+  // Sức khỏe
+  const health: string[] = [];
+  const flag =
+    active('Tật Ách') || KY === 'Tật Ách' || KY === 'Mệnh' || [KINH, DA].includes('Tật Ách') || [KINH, DA].includes('Mệnh');
+  health.push(
+    flag
+      ? 'Năm nên ưu tiên sức khỏe hơn bình thường: đừng gồng làm quá sức, khám tổng quát sớm trong năm.'
+      : 'Không có dấu hiệu đặc biệt về sức khỏe theo sách — vẫn nên khám tổng quát mỗi năm một lần.',
+  );
+  const tat = chart.palaces.find((p) => p.name === 'Tật Ách')!;
+  const tatMajors = tat.majors.length ? tat.majors : chart.palaces[mod12(tat.branch + 6)].majors;
+  for (const s of tatMajors.slice(0, 2)) {
+    const b = STAR_BODY[s.name];
+    if (b) health.push(`Cung sức khỏe của bạn có sao ${s.name}; sách Tử Vi gắn sao này với ${b.organs}. Coi đây là lời nhắc: ${b.habit}.`);
+  }
+  const badHealth = uniq([
+    ...tat.badStars.map((s) => s.name),
+    ...(KINH === 'Tật Ách' || KINH === 'Mệnh' ? ['Kình Dương'] : []),
+    ...(DA === 'Tật Ách' || DA === 'Mệnh' ? ['Đà La'] : []),
+  ]);
+  for (const n of badHealth.slice(0, 2)) if (BAD_STAR_HEALTH[n]) health.push(`${n}: ${BAD_STAR_HEALTH[n]}.`);
+  health.push('Đây là quan niệm truyền thống, không phải chẩn đoán. Có triệu chứng bất thường hãy đi khám — lá số không thay được bác sĩ.');
+
+  // Việc nên làm
+  const actions = uniq([
+    todo[0],
+    todo[1],
+    Q === 'Quan Lộc' ? 'Mạnh dạn nhận thêm trách nhiệm ở công việc.' : KY === 'Quan Lộc' ? 'Lưu giấy tờ công việc, tránh quyết định nghỉ việc lúc nóng giận.' : 'Học thêm một kỹ năng phục vụ công việc.',
+    KY === 'Phu Thê' ? 'Dành một buổi mỗi tuần nói chuyện thật với người bạn đời.' : active('Phu Thê') ? 'Dành thời gian chất lượng cho người thương.' : '',
+    flag ? 'Đặt lịch khám tổng quát trong quý đầu năm.' : 'Giữ giờ ngủ và vận động đều đặn.',
+  ]).slice(0, 5);
+
+  const evidence = [
+    `Năm ${l.canChi}, ${l.age} tuổi mụ`,
+    `Lưu Thái Tuế tại ${CHI[l.thaiTueBranch]} (cung ${TT}); Tiểu hạn tại cung ${TH}`,
+    `Lưu Tứ Hóa (Can năm): ${hoa.map((x) => `${x.star} hóa ${x.hoa} → ${x.landsIn}`).join('; ')}`,
+    `Lưu Lộc Tồn tại cung ${LT}, lưu Kình Dương tại ${KINH}, lưu Đà La tại ${DA}`,
+    ...(dv ? [`Đại vận cung ${dv.name} (${dv.daiVan[0]}–${dv.daiVan[1]}), Can ${dv.stemName}: ${dvHoa.map((x) => `${x.star} hóa ${x.hoa} → ${x.landsIn}`).join('; ')}`] : []),
+  ];
+
+  const paragraphs = [
+    ...summary,
+    `Tiền bạc — ${sources.join(' ')} ${leaks.join(' ')}`,
+    `Công việc — ${work.join(' ')}`,
+    `Tình cảm — ${love.join(' ')}`,
+    `Gia đình — ${family.join(' ')}`,
+    `Sức khỏe — ${health.join(' ')}`,
+  ];
+
+  return {
+    year: y,
+    canChi: l.canChi,
+    age: l.age,
+    thaiTue: TT,
+    tieuHan: TH,
+    daiVan: dv?.name,
+    hoa,
+    summary,
+    money: { sources, leaks, todo },
+    work,
+    love,
+    family,
+    health,
+    actions,
+    evidence,
+    paragraphs,
+  };
 }
 
 export function buildReading(chart: Chart, now = new Date()): Reading {
@@ -295,25 +490,21 @@ export function buildReading(chart: Chart, now = new Date()): Reading {
     { label: 'Mệnh chủ / Thân chủ', value: `${chart.menhChu} / ${chart.thanChu}`, explain: 'Thông tin phụ, ít ảnh hưởng luận giải.', term: 'Mệnh Chủ' },
   ];
 
-  const overviewText: string[] = [];
-  const menhMajors = menh.majors.length ? menh.majors : chart.palaces[(chart.menhBranch + 6) % 12].majors;
-  if (menhMajors.length) {
-    overviewText.push(
-      `Trục chính của lá số là ${menhMajors.map((s) => `${s.name} (${MAJOR[s.name]?.nickname.split(' — ')[1] ?? ''})`).join(' và ')} ở cung Mệnh${menh.majors.length ? '' : ' (mượn từ Thiên Di)'}. ${MAJOR[menhMajors[0].name]?.long ?? ''}`,
-    );
-  }
-  const hoaLines = HOA_ORDER.map((h) => {
-    const pal = where(chart, chart.hoa[h]);
-    return `${chart.hoa[h]} hóa ${h} tại cung ${pal?.name ?? '—'}`;
-  });
-  overviewText.push(`Tứ Hóa năm ${chart.canChi.year}: ${hoaLines.join('; ')}. Hóa Lộc chỉ nơi nguồn lực đổ về; Hóa Kỵ chỉ nơi bạn hay vướng bận nhất.`);
-  overviewText.push(
-    `Mệnh tam hợp với Tài Bạch và Quan Lộc, xung chiếu Thiên Di — bốn cung này nên đọc cùng nhau để thấy bức tranh tính cách và cách bạn làm việc, kiếm tiền.`,
-  );
-
   // Thứ tự đọc: Mệnh, rồi theo vòng ngược chiều kim đồng hồ (Huynh Đệ, Phu Thê...)
-  const order = Array.from({ length: 12 }, (_, i) => (((chart.menhBranch - i) % 12) + 12) % 12);
+  const order = Array.from({ length: 12 }, (_, i) => mod12(chart.menhBranch - i));
   const palaces = order.map((b) => readPalace(chart, b));
+
+  const menhR = palaces[0];
+  const locPal = where(chart, chart.hoa['Lộc'])?.name ?? 'Mệnh';
+  const kyPal = where(chart, chart.hoa['Kỵ'])?.name ?? 'Mệnh';
+  const quan = palaces.find((p) => p.palace === 'Quan Lộc')!;
+  const taiR = palaces.find((p) => p.palace === 'Tài Bạch')!;
+  const overviewText = [
+    `Bạn là người thế nào: ${menhR.summary}`,
+    `Cách bạn làm việc: ${quan.summary.split('. ')[0]}. Cách bạn kiếm tiền: ${lower(taiR.summary.split('. ')[0])}.`,
+    `Suốt đời, cơ hội và nguồn lực của bạn dễ đến từ ${MONEY_SOURCE[locPal]}. Chuyện bạn hay vướng bận, lo nghĩ nhất là ${DOMAIN_LABEL[PALACES[kyPal].domain]} — để tâm nhưng đừng để nó chi phối mọi quyết định.`,
+    ...(than.name !== 'Mệnh' ? [`Từ khoảng 30 tuổi, bạn đặt nhiều tâm sức vào ${DOMAIN_LABEL[PALACES[than.name].domain]} (cung Thân nằm ở cung ${than.name}).`] : ['Cung Thân nằm cùng cung Mệnh: bạn sống khá nhất quán, ít thay đổi bản chất theo tuổi tác.']),
+  ];
 
   const daiVan: DaiVanReading[] = chart.palaces
     .slice()
@@ -321,41 +512,32 @@ export function buildReading(chart: Chart, now = new Date()): Reading {
     .filter((p) => p.daiVan[0] <= 95)
     .map((p) => {
       const hoa = hoaLanding(chart, p.stem);
-      const notes: string[] = [];
       const loc = hoa.find((x) => x.hoa === 'Lộc')!;
       const ky = hoa.find((x) => x.hoa === 'Kỵ')!;
-      notes.push(`Hóa Lộc của đại vận (theo Can ${p.stemName}) rơi vào ${loc.star} tại cung ${loc.landsIn}: nguồn lực của 10 năm này dễ đổ về lĩnh vực ${DOMAIN_LABEL[PALACES[loc.landsIn]?.domain ?? 'menh']}.`);
-      notes.push(`Hóa Kỵ đại vận rơi vào ${ky.star} tại cung ${ky.landsIn}: lĩnh vực ${DOMAIN_LABEL[PALACES[ky.landsIn]?.domain ?? 'menh']} cần nhiều chú tâm hơn.`);
-      if (p.tuan || p.triet) notes.push(`Cung đại vận có ${[p.tuan && 'Tuần', p.triet && 'Triệt'].filter(Boolean).join(', ')}: tác động của các sao bị giảm bớt.`);
-      const majors = p.majors.length ? p.majors : chart.palaces[(p.branch + 6) % 12].majors;
+      const notes = [
+        `Cơ hội, nguồn lực dễ đến từ ${MONEY_SOURCE[loc.landsIn] ?? DOMAIN_LABEL.menh}.`,
+        `Chuyện hay vướng bận: ${DOMAIN_LABEL[PALACES[ky.landsIn]?.domain ?? 'menh']} — nên chuẩn bị kỹ ở mảng này.`,
+      ];
+      if (p.tuan || p.triet) notes.push('Kết quả của giai đoạn này thường đến chậm hơn kỳ vọng — kiên nhẫn hơn bình thường.');
+      const majors = p.majors.length ? p.majors : chart.palaces[mod12(p.branch + 6)].majors;
       return {
         branch: p.branch,
         palace: p.name,
         range: p.daiVan,
         current: age >= p.daiVan[0] && age <= p.daiVan[1],
-        summary: `Đại vận đi qua cung ${p.name} (${p.branchName}) với ${majors.map((s) => s.name).join(', ') || 'không chính tinh'}${p.majors.length ? '' : ' (mượn đối cung)'}: 10 năm có chủ đề nổi bật về ${DOMAIN_LABEL[PALACES[p.name].domain]}.`,
+        summary: `10 năm chủ đề ${DOMAIN_LABEL[PALACES[p.name].domain]}. ${upper(starInDomain(majors[0]?.name ?? '', PALACES[p.name].domain) || '')}`.trim(),
         hoa,
         notes,
+        evidence: [
+          `Đại vận cung ${p.name} (${p.branchName}), chính tinh ${majors.map((s) => s.name).join(', ') || '—'}${p.majors.length ? '' : ' (mượn đối cung)'}`,
+          `Tứ Hóa đại vận theo Can ${p.stemName}: ${hoa.map((x) => `${x.star} hóa ${x.hoa} → ${x.landsIn}`).join('; ')}`,
+          ...(p.tuan || p.triet ? [`${[p.tuan && 'Tuần', p.triet && 'Triệt'].filter(Boolean).join(', ')} tại cung đại vận`] : []),
+        ],
       };
     });
 
   const thisYear = new Date(now).getFullYear();
-  const years: YearReading[] = [thisYear, thisYear + 1].map((y) => {
-    const l = yearlyLuck(chart, y);
-    const tt = chart.palaces[l.thaiTueBranch];
-    const th = chart.palaces[l.tieuHan];
-    const hoa = HOA_ORDER.map((h) => {
-      const pal = where(chart, l.hoa[h]);
-      return { hoa: h, star: l.hoa[h], landsIn: pal?.name ?? '—' };
-    });
-    const paragraphs = [
-      `Năm ${l.canChi} (${y}), bạn ${l.age} tuổi mụ. Lưu Thái Tuế ở cung ${tt.name} (${CHI[l.thaiTueBranch]}): chủ đề ${DOMAIN_LABEL[PALACES[tt.name].domain]} nổi lên trong năm.`,
-      `Tiểu hạn ở cung ${th.name}: góc nhìn cá nhân của năm xoay quanh ${DOMAIN_LABEL[PALACES[th.name].domain]}.`,
-      `Lưu Tứ Hóa: ${hoa.map((x) => `${x.star} hóa ${x.hoa} (cung ${x.landsIn})`).join('; ')}. Nơi có lưu Hóa Lộc là nơi dễ thuận lợi; nơi có lưu Hóa Kỵ nên chuẩn bị kỹ hơn — không phải điềm xấu.`,
-    ];
-    if (l.daiVan) paragraphs.push(`Năm này nằm trong đại vận cung ${l.daiVan.name} (${l.daiVan.daiVan[0]}–${l.daiVan.daiVan[1]} tuổi).`);
-    return { year: y, canChi: l.canChi, age: l.age, thaiTue: tt.name, tieuHan: th.name, daiVan: l.daiVan?.name, hoa, paragraphs };
-  });
+  const years = [thisYear, thisYear + 1].map((y) => readYear(chart, y));
 
   return { overview, overviewText, palaces, daiVan, years, currentAge: age };
 }
@@ -367,48 +549,62 @@ export function teaserFor(chart: Chart, step: number) {
   const quan = r.palaces.find((p) => p.palace === 'Quan Lộc')!;
   const tai = r.palaces.find((p) => p.palace === 'Tài Bạch')!;
   const cur = r.daiVan.find((d) => d.current) ?? r.daiVan[0];
-  const kyPalace = where(chart, chart.hoa['Kỵ']);
+  const y = r.years[0];
   switch (step) {
     case 1:
       return {
         topic: 'menh',
-        title: `${menh.headline.split(':')[0]} ở cung Mệnh của bạn nghĩa là gì?`,
-        reveal: menh.paragraphs.slice(0, 2),
-        locked: `Còn ${Math.max(0, menh.paragraphs.length - 2)} nhận định và bảng dẫn chứng chi tiết cho cung Mệnh, cùng 11 cung còn lại.`,
+        title: `${menh.headline.split(' — ')[0]} ở cung Mệnh của bạn nghĩa là gì?`,
+        reveal: [menh.summary],
+        locked: 'Điểm mạnh, điểm hay vấp và việc nên làm cho từng cung, cùng 11 cung còn lại.',
       };
     case 2:
       return {
         topic: 'quan',
-        title: `Cung Quan Lộc: ${quan.teaser}`,
-        reveal: quan.paragraphs.slice(0, 1),
-        locked: `Phân tích đầy đủ cung Quan Lộc và Tài Bạch (${tai.teaser.toLowerCase()}) nằm trong bản Pro.`,
+        title: `Bạn hợp làm việc kiểu nào? (${quan.headline.split(' — ')[0]} ở cung Quan Lộc)`,
+        reveal: [quan.summary],
+        locked: `Cách bạn kiếm tiền (cung Tài Bạch: ${tai.headline.split(' — ')[0]}) và việc nên làm cụ thể nằm trong bản Pro.`,
       };
     case 3:
       return {
         topic: 'daivan',
-        title: `Bạn đang ở đại vận ${cur.range[0]}–${cur.range[1]} tuổi (cung ${cur.palace})`,
+        title: `10 năm ${cur.range[0]}–${cur.range[1]} tuổi của bạn xoay quanh chuyện gì?`,
         reveal: [cur.summary],
-        locked: `Tứ Hóa của đại vận này rơi vào đâu, và ${kyPalace ? `vì sao cung ${kyPalace.name} (nơi có Hóa Kỵ năm sinh)` : 'những cung nào'} cần để ý — có trong bản Pro.`,
+        locked: 'Cơ hội của giai đoạn này đến từ đâu và chuyện gì cần chuẩn bị kỹ — có trong bản Pro.',
       };
     default:
       return {
         topic: 'offer',
-        title: `Năm ${r.years[0].canChi} với lá số của bạn`,
-        reveal: r.years[0].paragraphs.slice(0, 1),
-        locked: 'Bản Pro: 12 cung đầy đủ dẫn chứng, toàn bộ đại vận, lưu niên 2 năm, bản in PDF.',
+        title: `Năm ${y.canChi}: tiền của bạn đến từ đâu?`,
+        reveal: [y.summary[0], y.money.sources[0]],
+        locked: 'Bản Pro: tiền dễ hao ở đâu, việc nên làm, công việc, tình cảm, gia đình, sức khỏe năm nay và năm sau; 12 cung đầy đủ.',
       };
   }
 }
 
-/** Cắt bản đọc cho gói Free: đầy đủ tổng quan + cung Mệnh; các cung khác chỉ còn tiêu đề. */
+/** Cắt bản đọc cho gói Free: đầy đủ tổng quan + cung Mệnh; năm nay chỉ phần tóm tắt và nguồn tiền chính. */
 export function toFree(r: Reading): Reading & { palaces: (PalaceReading & { locked?: boolean })[] } {
   return {
     ...r,
     palaces: r.palaces.map((p, i) =>
-      i === 0 ? p : { ...p, paragraphs: [], evidence: [], support: 0, challenge: 0, locked: true },
+      i === 0
+        ? p
+        : { ...p, summary: '', strengths: [], cautions: [], advice: [], paragraphs: [], evidence: [], support: 0, challenge: 0, locked: true },
     ),
-    daiVan: r.daiVan.map((d) => ({ ...d, hoa: [], notes: [] })),
-    years: r.years.slice(0, 1).map((y) => ({ ...y, hoa: [], paragraphs: y.paragraphs.slice(0, 1) })),
+    daiVan: r.daiVan.map((d) => ({ ...d, hoa: [], notes: [], evidence: [] })),
+    years: r.years.slice(0, 1).map((y) => ({
+      ...y,
+      hoa: [],
+      money: { sources: y.money.sources.slice(0, 1), leaks: [], todo: [] },
+      work: [],
+      love: [],
+      family: [],
+      health: [],
+      actions: [],
+      evidence: [],
+      paragraphs: [...y.summary, y.money.sources[0]],
+      locked: true,
+    })),
   };
 }
 

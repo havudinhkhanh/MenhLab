@@ -10,6 +10,7 @@ import { config, vnd } from '@/lib/config';
 import ChartExplorer, { type PalaceView } from './ChartExplorer';
 import { AiPanel, CheckoutButton, DeleteData, PrintButton, SaveChart } from './Actions';
 import Rating from './Rating';
+import { DaiVanNotes, PalaceBody, YearBody } from './ReadingBlocks';
 import { T } from './TermLayer';
 import BlindGate from './BlindTest';
 import type { PatternHit } from '@/lib/engine/patterns';
@@ -92,9 +93,9 @@ function ReportBody(p: ReportProps) {
 
       <nav className="tabs no-print" aria-label="Các phần của lá số">
         <a href="#tong-quan">Tổng quan</a>
+        <a href="#nam-nay">Năm {reading.years[0]?.year}</a>
         <a href="#12-cung">12 cung</a>
         <a href="#dai-van">Đại vận</a>
-        <a href="#nam-nay">Năm {reading.years[0]?.year}</a>
         <a href="#do-nhay">Độ nhạy giờ sinh</a>
         <a href="#cach-cuc">Cách cục</a>
         <a href="#cach-tinh">Cách an sao</a>
@@ -124,6 +125,23 @@ function ReportBody(p: ReportProps) {
             <p key={i}>{t}</p>
           ))}
         </div>
+      </section>
+
+      <section id="nam-nay" className="section">
+        <h2>
+          Năm nay: tiền bạc, công việc, sức khỏe {pro(`Pro: đầy đủ năm ${reading.years[0]?.year} và ${reading.years[0] ? reading.years[0].year + 1 : ''}`)}
+        </h2>
+        {reading.years.map((y) => (
+          <article key={y.year} className="reading">
+            <h3>
+              Năm {y.canChi} ({y.year})
+            </h3>
+            <YearBody y={y} />
+          </article>
+        ))}
+        <p className="small muted">
+          MệnhLab không đưa ra "năm hạn", "sao chiếu mệnh xấu" hay lời khuyên cúng giải. Xem <a href="/phuong-phap">lý do</a>.
+        </p>
       </section>
 
       <section id="cach-cuc" className="section">
@@ -181,19 +199,7 @@ function ReportBody(p: ReportProps) {
               <p className="muted small">🔒 Phần đọc chi tiết có trong bản Pro.</p>
             ) : (
               <>
-                <div className="prose">
-                  {r.paragraphs.map((t, i) => (
-                    <p key={i}>{t}</p>
-                  ))}
-                </div>
-                <details className="evidence">
-                  <summary>Vì sao? Căn cứ của nhận định</summary>
-                  <ul>
-                    {r.evidence.map((e, i) => (
-                      <li key={i}>{e}</li>
-                    ))}
-                  </ul>
-                </details>
+                <PalaceBody r={r} />
                 {p.canRate && chartId && <Rating chartId={chartId} section={`cung:${r.palace}`} />}
               </>
             )}
@@ -219,36 +225,12 @@ function ReportBody(p: ReportProps) {
                 · cung {d.palace} {d.current && <span className="pill">Hiện tại</span>}
               </div>
               <p style={{ margin: '4px 0' }}>{d.summary}</p>
-              {d.notes.map((n, i) => (
-                <p key={i} className="small" style={{ margin: '2px 0', color: 'var(--ink-2)' }}>
-                  {n}
-                </p>
-              ))}
+              <DaiVanNotes d={d} />
             </li>
           ))}
         </ol>
       </section>
 
-      <section id="nam-nay" className="section">
-        <h2>
-          Lưu niên {pro(`Pro: đầy đủ năm ${reading.years[0]?.year} và ${reading.years[0] ? reading.years[0].year + 1 : ''}`)}
-        </h2>
-        {reading.years.map((y) => (
-          <article key={y.year} className="reading">
-            <h3>
-              Năm {y.canChi} ({y.year})
-            </h3>
-            <div className="prose">
-              {y.paragraphs.map((t, i) => (
-                <p key={i}>{t}</p>
-              ))}
-            </div>
-          </article>
-        ))}
-        <p className="small muted">
-          MệnhLab không đưa ra "năm hạn", "sao chiếu mệnh xấu" hay lời khuyên cúng giải. Xem <a href="/phuong-phap">lý do</a>.
-        </p>
-      </section>
 
       <section id="do-nhay" className="section">
         <h2>Độ nhạy giờ sinh</h2>
