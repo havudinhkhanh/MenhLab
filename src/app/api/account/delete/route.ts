@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db, hashEmail } from '@/lib/db';
+import { db, dbEnabled, hashEmail } from '@/lib/db';
 import { clearSession, getSessionEmail } from '@/lib/auth';
 import { CONSENT_VERSION } from '@/lib/config';
 
@@ -7,6 +7,7 @@ import { CONSENT_VERSION } from '@/lib/config';
 export async function POST() {
   const email = await getSessionEmail();
   if (!email) return NextResponse.json({ error: 'Bạn chưa đăng nhập.' }, { status: 401 });
+  if (!dbEnabled()) return NextResponse.json({ error: 'Máy chủ chưa cấu hình cơ sở dữ liệu.' }, { status: 503 });
   const sb = db();
   const { data } = await sb.from('charts').select('id').eq('email', email);
   const ids = ((data ?? []) as { id: string }[]).map((r) => r.id);

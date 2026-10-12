@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionEmail } from '@/lib/auth';
-import { db, type ChartRow } from '@/lib/db';
+import { db, dbEnabled, type ChartRow } from '@/lib/db';
 import { withTestPro } from '@/lib/testAccount';
 import { buildChart } from '@/lib/engine/chart';
 import { buildReading } from '@/lib/reading';
@@ -46,8 +46,26 @@ function summary(row: ChartRow, now: Date) {
 export default async function AccountPage() {
   const email = await getSessionEmail();
   if (!email) redirect('/dang-nhap?next=/tai-khoan');
-  const { data } = await db().from('charts').select('*').eq('email', email).order('created_at', { ascending: false }).limit(100);
-  const rows = ((data ?? []) as ChartRow[]).map(withTestPro);
+  if (!dbEnabled()) {
+    return (
+      <div className="wrap account">
+        <div className="empty">
+          <h1>Chưa lưu được lá số</h1>
+          <p>Bạn đã đăng nhập bằng {email}, nhưng máy chủ chưa được nối với cơ sở dữ liệu nên chưa lưu và hiện lá số được. Vui lòng quay lại sau.</p>
+          <Link href="/" className="btn">
+            Về trang chủ
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  let rows: ChartRow[] = [];
+  try {
+    const { data } = await db().from('charts').select('*').eq('email', email).order('created_at', { ascending: false }).limit(100);
+    rows = ((data ?? []) as ChartRow[]).map(withTestPro);
+  } catch {
+    rows = [];
+  }
   const now = new Date();
 
   return (
