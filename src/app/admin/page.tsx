@@ -26,7 +26,23 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
       </div>
     );
   }
-  if (!dbEnabled()) return <div className="wrap">Chưa cấu hình Supabase.</div>;
+  if (!dbEnabled()) {
+    return (
+      <div className="wrap narrow" style={{ padding: '32px 16px' }}>
+        <h1>Quản trị</h1>
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <h2 style={{ marginTop: 0 }}>Xem thử bản Pro</h2>
+          <p>Nhập ngày giờ sinh bất kỳ, xem đúng nội dung khách nhận được sau khi mua. Không cần cơ sở dữ liệu.</p>
+          <a className="btn" href="/admin/thu-pro">
+            Mở bản xem thử
+          </a>
+        </div>
+        <p className="note">
+          Chưa cấu hình Supabase nên chưa có đơn hàng, thống kê hay chức năng tặng Pro. Làm theo bước 2 trong SETUP.md để bật.
+        </p>
+      </div>
+    );
+  }
 
   const sb = db();
   const [{ data: pending }, { data: paid }, charts, pro, mkt, fb] = await Promise.all([
@@ -44,6 +60,41 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
     <div className="wrap" style={{ padding: '32px 16px' }}>
       <h1>Quản trị</h1>
       {sp.ok && <p className="note">Đã xác nhận đơn #{sp.ok} và mở khóa Pro.</p>}
+      {sp.tang && (
+        <p className="note">
+          Đã mở Pro cho lá số. <a href={`/la-so/${sp.tang}`}>Mở lá số</a>
+        </p>
+      )}
+      {sp.loi === '3' && <p className="alert">Chưa cấu hình Supabase nên chưa tặng Pro được.</p>}
+      {sp.loi === '4' && <p className="alert">Không tìm thấy lá số. Hãy dán đúng link /la-so/... hoặc mã lá số.</p>}
+
+      <div className="plans" style={{ marginBottom: 32 }}>
+        <div className="panel">
+          <h2 style={{ marginTop: 0 }}>Xem thử bản Pro</h2>
+          <p>Nhập ngày giờ sinh bất kỳ, xem đúng nội dung khách nhận được sau khi mua — kể cả thử AI. Không lưu gì, không cần cơ sở dữ liệu.</p>
+          <a className="btn" href="/admin/thu-pro">
+            Mở bản xem thử
+          </a>
+        </div>
+        <form method="post" action="/api/admin" className="panel">
+          <h2 style={{ marginTop: 0 }}>Tặng Pro cho lá số đã lưu</h2>
+          <p className="small">
+            Dùng để thử trọn luồng thật (lưu, email, AI hỏi đáp, bản in) hoặc tặng người quen. Ghi nhận như một đơn 0₫ để đối soát.
+          </p>
+          <input type="hidden" name="action" value="grant" />
+          <div className="field">
+            <label htmlFor="gc">Link hoặc mã lá số</label>
+            <input id="gc" name="chart" type="text" placeholder="https://.../la-so/xxxxxxxx-..." required />
+          </div>
+          <div className="field">
+            <label htmlFor="gn">Ghi chú (không bắt buộc)</label>
+            <input id="gn" name="note" type="text" placeholder="Thử nghiệm nội bộ" />
+          </div>
+          <button className="btn ghost" type="submit">
+            Mở Pro miễn phí
+          </button>
+        </form>
+      </div>
       <div className="overview" style={{ marginBottom: 24 }}>
         <div>
           <div className="k">Lá số đã lưu</div>

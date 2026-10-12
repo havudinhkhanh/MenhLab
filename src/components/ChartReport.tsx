@@ -32,6 +32,8 @@ export interface ReportProps {
   menhKey: string;
   /** Hiện thí nghiệm ghép cặp mù trước khi xem lá số. */
   blindGate?: { gateKey: string; researchConsent?: boolean };
+  /** Bản xem thử Pro của quản trị viên (không lưu, không có hành động mua/xóa). */
+  adminPreview?: boolean;
 }
 
 const TIME_MODE: Record<string, string> = {
@@ -75,7 +77,7 @@ function ReportBody(p: ReportProps) {
           <p className="note">Đang chờ xác nhận thanh toán. Trang sẽ mở khóa ngay khi cổng thanh toán báo về (thường dưới 1 phút) — hãy tải lại trang.</p>
         )}
         {p.paymentReturn === 'cancel' && <p className="alert">Bạn đã hủy thanh toán. Lá số vẫn được giữ nguyên.</p>}
-        {!chartId && (
+        {!chartId && !p.adminPreview && (
           <p className="note">Chế độ xem nhanh: lá số được tính ngay trên máy bạn, không lưu gì trên máy chủ. Đóng tab là mất.</p>
         )}
         {chart.birth.warnings.map((w, i) => (
@@ -411,6 +413,7 @@ function ReportBody(p: ReportProps) {
 
       <section className="section no-print" style={{ marginTop: 48, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {isPro && <PrintButton />}
+        {p.adminPreview && <span className="small muted">Bản xem thử: không có nút xóa dữ liệu vì không lưu gì.</span>}
         {chartId && <DeleteData chartId={chartId} />}
       </section>
     </div>

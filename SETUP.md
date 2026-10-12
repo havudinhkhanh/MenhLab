@@ -137,6 +137,23 @@ Không bật AI thì gói Pro vẫn đầy đủ phần luận giải theo quy t
 
 ---
 
+## 6b. Thử bản Pro trước khi public (không cần trả tiền)
+
+**Cách 1 — nhanh nhất, chỉ cần Vercel:** chỉ cần đặt 2 biến `ADMIN_KEY` và `APP_SECRET` (bước 1) là đủ, chưa cần Supabase hay Resend.
+1. Vào `https://<trang của bạn>/admin`, nhập `ADMIN_KEY` → Đăng nhập.
+2. Bấm **Mở bản xem thử** (trang `/admin/thu-pro`).
+3. Nhập ngày giờ sinh bất kỳ → **Xem bản Pro**. Bạn thấy đúng nội dung khách nhận được sau khi mua: 12 cung có căn cứ, Tứ Hóa từng đại vận, lưu niên 2 năm, bản in. Nếu đã đặt `ANTHROPIC_API_KEY`, có thêm nút thử luận giải AI và hỏi đáp.
+4. Không lưu gì, không gửi email, không tạo đơn hàng. Bấm **Thử lá số khác** để đổi người.
+
+**Cách 2 — thử trọn luồng thật (cần Supabase):**
+1. Lập lá số ở trang chủ, nhập email của bạn, đánh dấu ô đồng ý → lá số được lưu.
+2. Vào `/admin` → ô **Tặng Pro cho lá số đã lưu** → dán link lá số → **Mở Pro miễn phí**. Hệ thống ghi một đơn 0₫ (cách "gift") để đối soát.
+3. Mở lại link lá số: thấy nhãn Pro, AI hỏi đáp (nếu bật), lưu lại kết quả AI giữa các lần mở.
+
+Cũng dùng ô này để tặng Pro cho người quen thử nghiệm và góp ý.
+
+**Cách 3 — thử thanh toán thật:** xem cuối bước 5 (tạm hạ giá xuống 2.000₫).
+
 ## 7. Kiểm tra sau khi setup
 
 Làm lần lượt, đánh dấu từng dòng:

@@ -11,7 +11,14 @@ export const DRAFT_KEY = 'menhlab:draft';
 
 const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 
-export default function BirthForm() {
+export default function BirthForm({
+  onPreview,
+  submitLabel,
+}: {
+  /** Chế độ xem thử (trang quản trị): bỏ phần email/đồng ý, trả dữ liệu cho trang gọi thay vì chuyển trang. */
+  onPreview?: (input: BirthInput, conventions: Conventions) => void | Promise<void>;
+  submitLabel?: string;
+} = {}) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [gender, setGender] = useState<'nam' | 'nu' | ''>('');
@@ -76,13 +83,22 @@ export default function BirthForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, timeMode, dayChange, leapRule]);
 
-  const wantsSave = email.trim() !== '';
+  const wantsSave = !onPreview && email.trim() !== '';
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     if (!input) return setError('Vui lòng điền đủ giới tính, ngày sinh và giờ sinh (hoặc chọn "Không biết giờ").');
     if (preview && !preview.ok) return setError(preview.msg);
+    if (onPreview) {
+      setBusy(true);
+      try {
+        await onPreview(input, conventions);
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (wantsSave && !cProcessing)
       return setError('Để lưu lá số và gửi link qua email, vui lòng đánh dấu ô đồng ý xử lý dữ liệu. Nếu không muốn lưu, hãy xóa email.');
 
@@ -366,6 +382,7 @@ export default function BirthForm() {
         </div>
       )}
 
+      {!onPreview && (
       <div className="field" style={{ marginTop: 20 }}>
         <label htmlFor="em">Email (để lưu lá số)</label>
         <input id="em" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Bỏ trống nếu chỉ muốn xem nhanh" />
@@ -375,6 +392,7 @@ export default function BirthForm() {
             : 'Bỏ trống email: lá số được tính ngay trên máy bạn, không gửi hay lưu gì lên máy chủ.'}
         </span>
       </div>
+      )}
 
       {wantsSave && (
         <fieldset style={{ border: 0, padding: 0, margin: '0 0 8px' }}>
@@ -411,7 +429,7 @@ export default function BirthForm() {
         </p>
       )}
       <button className="btn" type="submit" disabled={busy} style={{ width: '100%' }}>
-        {busy ? 'Đang lập lá số…' : wantsSave ? 'Lập và lưu lá số' : 'Lập lá số'}
+        {busy ? 'Đang lập lá số…' : submitLabel ?? (wantsSave ? 'Lập và lưu lá số' : 'Lập lá số')}
       </button>
     </form>
   );
